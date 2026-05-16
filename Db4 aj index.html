@@ -1,0 +1,2379 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+        <title>Mana Hub — Subscription Dashboard</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            * {
+                font-family: "Inter", sans-serif;
+            }
+            body {
+                background: #0f172a;
+                color: #e2e8f0;
+            }
+
+            /* Scrollbar */
+            ::-webkit-scrollbar {
+                width: 5px;
+                height: 5px;
+            }
+            ::-webkit-scrollbar-track {
+                background: #1e293b;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #475569;
+                border-radius: 3px;
+            }
+
+            /* Sidebar */
+            .sidebar {
+                width: 240px;
+                min-height: 100vh;
+                background: #0f172a;
+                border-right: 1px solid #1e293b;
+                flex-shrink: 0;
+            }
+            .sidebar-link {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 16px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.15s;
+                color: #94a3b8;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            .sidebar-link:hover {
+                background: #1e293b;
+                color: #e2e8f0;
+            }
+            .sidebar-link.active {
+                background: #1d4ed8;
+                color: #fff;
+            }
+            .sidebar-link svg {
+                flex-shrink: 0;
+            }
+
+            /* Cards */
+            .stat-card {
+                background: #1e293b;
+                border: 1px solid #334155;
+                border-radius: 12px;
+                padding: 20px;
+            }
+            .data-card {
+                background: #1e293b;
+                border: 1px solid #334155;
+                border-radius: 12px;
+            }
+
+            /* Table */
+            .table-row {
+                border-bottom: 1px solid #1e293b;
+                transition: background 0.15s;
+            }
+            .table-row:hover {
+                background: #1e293b;
+            }
+            .table-row:last-child {
+                border-bottom: none;
+            }
+
+            /* Modal */
+            .modal-bg {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(6px);
+                z-index: 50;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+            }
+            .modal-card {
+                background: #1e293b;
+                border: 1px solid #334155;
+                border-radius: 16px;
+                width: 100%;
+                max-width: 560px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            /* Input */
+            .inp {
+                width: 100%;
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                padding: 10px 12px;
+                color: #e2e8f0;
+                font-size: 14px;
+                outline: none;
+                transition: border-color 0.15s;
+            }
+            .inp:focus {
+                border-color: #3b82f6;
+            }
+            .inp::placeholder {
+                color: #475569;
+            }
+            select.inp option {
+                background: #1e293b;
+            }
+
+            /* Buttons */
+            .btn {
+                padding: 9px 18px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.15s;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+            }
+            .btn-primary {
+                background: #1d4ed8;
+                color: #fff;
+            }
+            .btn-primary:hover {
+                background: #1e40af;
+            }
+            .btn-success {
+                background: #059669;
+                color: #fff;
+            }
+            .btn-success:hover {
+                background: #047857;
+            }
+            .btn-danger {
+                background: #dc2626;
+                color: #fff;
+            }
+            .btn-danger:hover {
+                background: #b91c1c;
+            }
+            .btn-ghost {
+                background: #334155;
+                color: #94a3b8;
+            }
+            .btn-ghost:hover {
+                background: #475569;
+                color: #e2e8f0;
+            }
+            .btn-warn {
+                background: #d97706;
+                color: #fff;
+            }
+            .btn-warn:hover {
+                background: #b45309;
+            }
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            .btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            /* Badge */
+            .badge {
+                padding: 3px 9px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+            }
+            .badge-green {
+                background: rgba(16, 185, 129, 0.15);
+                color: #10b981;
+                border: 1px solid rgba(16, 185, 129, 0.25);
+            }
+            .badge-red {
+                background: rgba(239, 68, 68, 0.15);
+                color: #ef4444;
+                border: 1px solid rgba(239, 68, 68, 0.25);
+            }
+            .badge-yellow {
+                background: rgba(245, 158, 11, 0.15);
+                color: #f59e0b;
+                border: 1px solid rgba(245, 158, 11, 0.25);
+            }
+            .badge-blue {
+                background: rgba(59, 130, 246, 0.15);
+                color: #3b82f6;
+                border: 1px solid rgba(59, 130, 246, 0.25);
+            }
+            .badge-gray {
+                background: rgba(100, 116, 139, 0.15);
+                color: #94a3b8;
+                border: 1px solid rgba(100, 116, 139, 0.25);
+            }
+
+            /* Progress bar */
+            .prog-bar {
+                height: 6px;
+                background: #334155;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+            .prog-fill {
+                height: 100%;
+                border-radius: 3px;
+                transition: width 0.6s;
+            }
+
+            /* Sidebar mobile */
+            @media (max-width: 768px) {
+                .sidebar {
+                    display: none;
+                    position: fixed;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    z-index: 40;
+                    display: flex;
+                    flex-direction: column;
+                    transform: translateX(-100%);
+                    transition: transform 0.25s;
+                }
+                .sidebar.open {
+                    transform: translateX(0);
+                }
+                .main-content {
+                    margin-left: 0 !important;
+                }
+            }
+
+            /* Toast */
+            #toast-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 100;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .toast {
+                padding: 12px 18px;
+                border-radius: 10px;
+                font-size: 13px;
+                font-weight: 500;
+                max-width: 320px;
+                animation: slideIn 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            }
+            .toast-success {
+                background: #064e3b;
+                border: 1px solid #059669;
+                color: #6ee7b7;
+            }
+            .toast-error {
+                background: #450a0a;
+                border: 1px solid #dc2626;
+                color: #fca5a5;
+            }
+            .toast-info {
+                background: #1e3a5f;
+                border: 1px solid #1d4ed8;
+                color: #93c5fd;
+            }
+            .toast-warn {
+                background: #451a03;
+                border: 1px solid #d97706;
+                color: #fcd34d;
+            }
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+
+            /* Skeleton */
+            .skeleton {
+                background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+                background-size: 200% 100%;
+                animation: skel 1.4s infinite;
+                border-radius: 6px;
+            }
+            @keyframes skel {
+                0% {
+                    background-position: 200% 0;
+                }
+                100% {
+                    background-position: -200% 0;
+                }
+            }
+
+            /* Login */
+            #login-page {
+                position: fixed;
+                inset: 0;
+                background: #0f172a;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 200;
+            }
+
+            /* Chart bars */
+            .chart-bar {
+                flex: 1;
+                border-radius: 4px 4px 0 0;
+                transition: height 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                cursor: pointer;
+                position: relative;
+                min-width: 20px;
+            }
+            .chart-bar:hover {
+                filter: brightness(1.2);
+            }
+            .chart-bar-tip {
+                position: absolute;
+                bottom: 105%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                padding: 4px 10px;
+                font-size: 11px;
+                white-space: nowrap;
+                display: none;
+                z-index: 10;
+            }
+            .chart-bar:hover .chart-bar-tip {
+                display: block;
+            }
+
+            /* Spinner */
+            .spinner {
+                width: 20px;
+                height: 20px;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                border-top-color: #fff;
+                border-radius: 50%;
+                animation: spin 0.7s linear infinite;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* Transition */
+            .section {
+                animation: fadeIn 0.2s ease;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+
+            /* Detail panel */
+            .detail-label {
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                color: #64748b;
+                margin-bottom: 4px;
+            }
+            .detail-val {
+                font-size: 15px;
+                font-weight: 600;
+                color: #e2e8f0;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- TOAST CONTAINER -->
+        <div id="toast-container"></div>
+
+        <!-- ============================================================
+     LOGIN PAGE
+     ============================================================ -->
+        <div id="login-page">
+            <div style="width: 100%; max-width: 400px; padding: 16px">
+                <div style="background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 36px 32px">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 32px">
+                        <div
+                            style="
+                                width: 40px;
+                                height: 40px;
+                                background: linear-gradient(135deg, #1d4ed8, #0891b2);
+                                border-radius: 10px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            "
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#fff"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M3 12h3M18 12h3M12 3v3M12 18v3" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 18px; font-weight: 700; color: #e2e8f0">Mana Hub</div>
+                            <div style="font-size: 12px; color: #64748b">Admin Dashboard</div>
+                        </div>
+                    </div>
+                    <div
+                        id="login-err"
+                        style="
+                            display: none;
+                            background: rgba(239, 68, 68, 0.1);
+                            border: 1px solid rgba(239, 68, 68, 0.3);
+                            border-radius: 8px;
+                            padding: 10px 14px;
+                            font-size: 13px;
+                            color: #f87171;
+                            margin-bottom: 16px;
+                        "
+                    ></div>
+                    <div style="margin-bottom: 14px">
+                        <label
+                            style="
+                                display: block;
+                                font-size: 12px;
+                                font-weight: 600;
+                                color: #64748b;
+                                text-transform: uppercase;
+                                letter-spacing: 0.6px;
+                                margin-bottom: 7px;
+                            "
+                            >Username</label
+                        >
+                        <input
+                            class="inp"
+                            type="text"
+                            id="l-user"
+                            placeholder="Enter username"
+                            autocomplete="username"
+                        />
+                    </div>
+                    <div style="margin-bottom: 14px">
+                        <label
+                            style="
+                                display: block;
+                                font-size: 12px;
+                                font-weight: 600;
+                                color: #64748b;
+                                text-transform: uppercase;
+                                letter-spacing: 0.6px;
+                                margin-bottom: 7px;
+                            "
+                            >Password</label
+                        >
+                        <input
+                            class="inp"
+                            type="password"
+                            id="l-pass"
+                            placeholder="Enter password"
+                            autocomplete="current-password"
+                        />
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px">
+                        <input
+                            type="checkbox"
+                            id="l-rem"
+                            checked
+                            style="accent-color: #1d4ed8; width: 15px; height: 15px; cursor: pointer"
+                        />
+                        <label for="l-rem" style="font-size: 13px; color: #94a3b8; cursor: pointer">Remember me</label>
+                    </div>
+                    <button
+                        class="btn btn-primary"
+                        id="l-btn"
+                        onclick="doLogin()"
+                        style="width: 100%; justify-content: center; padding: 12px"
+                    >
+                        Sign In
+                    </button>
+                    <div
+                        style="
+                            margin-top: 20px;
+                            padding-top: 20px;
+                            border-top: 1px solid #334155;
+                            font-size: 12px;
+                            color: #475569;
+                            text-align: center;
+                        "
+                    >
+                        Default: <span style="color: #94a3b8">ANIL JAKKULA</span> /
+                        <span style="color: #94a3b8">Anil.jakkula@handler</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+     MAIN APP
+     ============================================================ -->
+        <div id="app" style="display: none; display: flex; min-height: 100vh">
+            <!-- SIDEBAR -->
+            <aside class="sidebar flex flex-col" id="sidebar">
+                <!-- Brand -->
+                <div style="padding: 20px 16px 12px; border-bottom: 1px solid #1e293b">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                        <div
+                            style="
+                                width: 36px;
+                                height: 36px;
+                                background: linear-gradient(135deg, #1d4ed8, #0891b2);
+                                border-radius: 9px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                flex-shrink: 0;
+                            "
+                        >
+                            <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#fff"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M3 12h3M18 12h3M12 3v3M12 18v3" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: #e2e8f0">Mana Hub</div>
+                            <div style="font-size: 11px; color: #475569">Subscription Tracker</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nav -->
+                <nav style="padding: 12px 8px; flex: 1; overflow-y: auto">
+                    <div
+                        style="
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #475569;
+                            text-transform: uppercase;
+                            letter-spacing: 0.8px;
+                            padding: 6px 8px;
+                            margin-bottom: 4px;
+                        "
+                    >
+                        Main
+                    </div>
+                    <div class="sidebar-link active" onclick="showSection('overview',this)">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                        Overview
+                    </div>
+                    <div class="sidebar-link" onclick="showSection('customers',this)">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                        Customers
+                        <span
+                            id="cust-count-badge"
+                            style="
+                                margin-left: auto;
+                                background: #334155;
+                                color: #94a3b8;
+                                font-size: 11px;
+                                font-weight: 600;
+                                padding: 1px 7px;
+                                border-radius: 10px;
+                            "
+                            >0</span
+                        >
+                    </div>
+                    <div class="sidebar-link" onclick="showSection('deliveries',this)">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="1" y="3" width="15" height="13" />
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                            <circle cx="5.5" cy="18.5" r="2.5" />
+                            <circle cx="18.5" cy="18.5" r="2.5" />
+                        </svg>
+                        Deliveries
+                    </div>
+                    <div class="sidebar-link" onclick="showSection('payments',this)">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                            <line x1="1" y1="10" x2="23" y2="10" />
+                        </svg>
+                        Payments
+                        <span
+                            id="pay-badge"
+                            style="
+                                display: none;
+                                margin-left: auto;
+                                background: rgba(239, 68, 68, 0.2);
+                                color: #f87171;
+                                font-size: 11px;
+                                font-weight: 600;
+                                padding: 1px 7px;
+                                border-radius: 10px;
+                            "
+                            >0</span
+                        >
+                    </div>
+                    <div class="sidebar-link" onclick="showSection('reports',this)">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
+                        Reports
+                    </div>
+                    <div
+                        style="
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: #475569;
+                            text-transform: uppercase;
+                            letter-spacing: 0.8px;
+                            padding: 6px 8px;
+                            margin-bottom: 4px;
+                            margin-top: 12px;
+                        "
+                    >
+                        System
+                    </div>
+                    <div class="sidebar-link" onclick="showSection('settings',this)">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M5.34 5.34 3.93 3.93M12 20v2M12 2v2"
+                            />
+                        </svg>
+                        Settings
+                    </div>
+                </nav>
+
+                <!-- User + Logout -->
+                <div style="padding: 12px 8px; border-top: 1px solid #1e293b">
+                    <div
+                        style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            padding: 10px 8px;
+                            border-radius: 8px;
+                            background: #0f172a;
+                            margin-bottom: 8px;
+                        "
+                    >
+                        <div
+                            style="
+                                width: 32px;
+                                height: 32px;
+                                border-radius: 8px;
+                                background: linear-gradient(135deg, #1d4ed8, #0891b2);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 13px;
+                                font-weight: 700;
+                                color: #fff;
+                                flex-shrink: 0;
+                            "
+                        >
+                            AJ
+                        </div>
+                        <div style="flex: 1; min-width: 0">
+                            <div
+                                style="
+                                    font-size: 13px;
+                                    font-weight: 600;
+                                    color: #e2e8f0;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                "
+                            >
+                                Anil Jakkula
+                            </div>
+                            <div style="font-size: 11px; color: #475569">Admin</div>
+                        </div>
+                    </div>
+                    <button
+                        class="btn btn-ghost"
+                        onclick="logout()"
+                        style="width: 100%; justify-content: center; font-size: 13px; padding: 8px"
+                    >
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        Sign Out
+                    </button>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <div style="flex: 1; overflow-x: hidden; display: flex; flex-direction: column" id="main-content">
+                <!-- TOP BAR -->
+                <div
+                    style="
+                        background: #0f172a;
+                        border-bottom: 1px solid #1e293b;
+                        padding: 12px 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        position: sticky;
+                        top: 0;
+                        z-index: 30;
+                    "
+                >
+                    <div style="display: flex; align-items: center; gap: 12px">
+                        <button
+                            onclick="toggleSidebar()"
+                            style="
+                                background: none;
+                                border: none;
+                                color: #64748b;
+                                cursor: pointer;
+                                padding: 4px;
+                                display: none;
+                            "
+                            id="menu-btn"
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <line x1="3" y1="12" x2="21" y2="12" />
+                                <line x1="3" y1="6" x2="21" y2="6" />
+                                <line x1="3" y1="18" x2="21" y2="18" />
+                            </svg>
+                        </button>
+                        <div>
+                            <div style="font-size: 16px; font-weight: 700; color: #e2e8f0" id="page-title">
+                                Overview
+                            </div>
+                            <div style="font-size: 12px; color: #64748b" id="page-sub">Dashboard analytics</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px">
+                        <div
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 6px;
+                                padding: 6px 12px;
+                                background: #1e293b;
+                                border: 1px solid #334155;
+                                border-radius: 8px;
+                                font-size: 12px;
+                                color: #64748b;
+                            "
+                        >
+                            <div
+                                id="api-indicator"
+                                style="width: 7px; height: 7px; border-radius: 50%; background: #6b7280"
+                            ></div>
+                            <span id="api-label">Connecting</span>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" id="refresh-btn" onclick="manualRefresh()">
+                            <svg
+                                id="refresh-ico"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <polyline points="23 4 23 10 17 10" />
+                                <polyline points="1 20 1 14 7 14" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                            </svg>
+                            Refresh
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="openAddCustomer()">
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Add Customer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PAGE CONTENT -->
+                <div style="padding: 24px; flex: 1" id="page-content">
+                    <!-- Sections rendered here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+     CUSTOMER FORM MODAL (Add / Edit)
+     ============================================================ -->
+        <div class="modal-bg" id="cust-modal" style="display: none" onclick="onModalBgClick(event,'cust-modal')">
+            <div class="modal-card" onclick="e=>e.stopPropagation()">
+                <div
+                    style="
+                        padding: 20px 24px;
+                        border-bottom: 1px solid #334155;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    "
+                >
+                    <div style="font-size: 16px; font-weight: 700; color: #e2e8f0" id="cust-modal-title">
+                        Add New Customer
+                    </div>
+                    <button
+                        onclick="closeModal('cust-modal')"
+                        style="background: none; border: none; color: #64748b; cursor: pointer; padding: 4px"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+                <div style="padding: 24px">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px" id="form-grid">
+                        <div style="grid-column: 1/-1">
+                            <label class="detail-label">Full Name *</label>
+                            <input class="inp" type="text" id="f-name" placeholder="Customer full name" />
+                        </div>
+                        <div>
+                            <label class="detail-label">Phone Number *</label>
+                            <input
+                                class="inp"
+                                type="tel"
+                                id="f-phone"
+                                placeholder="10-digit mobile"
+                                maxlength="10"
+                                inputmode="numeric"
+                            />
+                        </div>
+                        <div>
+                            <label class="detail-label">Plan *</label>
+                            <select class="inp" id="f-plan">
+                                <option value="basic">Basic</option>
+                                <option value="premium">Premium</option>
+                                <option value="standard">Standard</option>
+                            </select>
+                        </div>
+                        <div style="grid-column: 1/-1">
+                            <label class="detail-label">Address</label>
+                            <input class="inp" type="text" id="f-addr" placeholder="Full address" />
+                        </div>
+                        <div>
+                            <label class="detail-label">Total Meals *</label>
+                            <input
+                                class="inp"
+                                type="number"
+                                id="f-total"
+                                placeholder="e.g. 30"
+                                min="1"
+                                inputmode="numeric"
+                            />
+                        </div>
+                        <div>
+                            <label class="detail-label">Delivered So Far</label>
+                            <input
+                                class="inp"
+                                type="number"
+                                id="f-delivered"
+                                placeholder="0"
+                                min="0"
+                                value="0"
+                                inputmode="numeric"
+                            />
+                        </div>
+                        <div>
+                            <label class="detail-label">Start Date *</label>
+                            <input class="inp" type="date" id="f-start" />
+                        </div>
+                        <div>
+                            <label class="detail-label">Expiry Date</label>
+                            <input class="inp" type="date" id="f-expiry" />
+                        </div>
+                        <div>
+                            <label class="detail-label">Status</label>
+                            <select class="inp" id="f-status">
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="detail-label">Payment Status</label>
+                            <select class="inp" id="f-pay">
+                                <option value="paid">Paid</option>
+                                <option value="pending">Pending</option>
+                                <option value="partial">Partial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div
+                        id="form-err"
+                        style="
+                            display: none;
+                            background: rgba(239, 68, 68, 0.1);
+                            border: 1px solid rgba(239, 68, 68, 0.3);
+                            border-radius: 8px;
+                            padding: 10px 14px;
+                            font-size: 13px;
+                            color: #f87171;
+                            margin-top: 14px;
+                        "
+                    ></div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px">
+                        <button
+                            class="btn btn-primary"
+                            id="form-save-btn"
+                            onclick="submitCustomerForm()"
+                            style="flex: 1; justify-content: center"
+                        >
+                            Save Customer
+                        </button>
+                        <button class="btn btn-ghost" onclick="closeModal('cust-modal')" style="padding: 9px 20px">
+                            Cancel
+                        </button>
+                        <button
+                            class="btn btn-danger btn-sm"
+                            id="form-del-btn"
+                            onclick="deleteFromForm()"
+                            style="display: none"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+     CUSTOMER DETAIL MODAL
+     ============================================================ -->
+        <div class="modal-bg" id="detail-modal" style="display: none" onclick="onModalBgClick(event,'detail-modal')">
+            <div class="modal-card" style="max-width: 640px" onclick="e=>e.stopPropagation()">
+                <div
+                    style="
+                        padding: 20px 24px;
+                        border-bottom: 1px solid #334155;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                    "
+                >
+                    <div style="font-size: 16px; font-weight: 700; color: #e2e8f0">Customer Details</div>
+                    <button
+                        onclick="closeModal('detail-modal')"
+                        style="background: none; border: none; color: #64748b; cursor: pointer; padding: 4px"
+                    >
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
+                </div>
+                <div style="padding: 24px" id="detail-content"></div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+     CONFIRM DELETE DIALOG
+     ============================================================ -->
+        <div class="modal-bg" id="confirm-modal" style="display: none">
+            <div
+                style="
+                    background: #1e293b;
+                    border: 1px solid #334155;
+                    border-radius: 16px;
+                    padding: 28px;
+                    width: 100%;
+                    max-width: 380px;
+                    text-align: center;
+                "
+            >
+                <div style="font-size: 42px; margin-bottom: 14px">🗑️</div>
+                <div style="font-size: 18px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px">
+                    Delete Customer?
+                </div>
+                <div style="font-size: 13px; color: #94a3b8; margin-bottom: 22px; line-height: 1.5" id="confirm-body">
+                    This will permanently remove this customer from Google Sheets.
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                    <button class="btn btn-ghost" onclick="closeModal('confirm-modal')" style="justify-content: center">
+                        Cancel
+                    </button>
+                    <button class="btn btn-danger" id="confirm-yes-btn" style="justify-content: center">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ═══════════════════════════════════════════════════════════════════
+            // CONFIGURATION — UPDATE THIS WITH YOUR APPS SCRIPT URL
+            // ═══════════════════════════════════════════════════════════════════
+            const CONFIG = {
+                // !! PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE !!
+                API_URL:
+                    "https://script.google.com/macros/s/AKfycbwja--cgkGoAzpgXftFeKtC7qbrYmhZzY1wTAtcGGEUPbXy_r83AEOLg7kzbfwhiK4/exec",
+                REFRESH_INTERVAL: 5000, // 5 seconds auto-refresh
+                CREDS: { user: "ANIL JAKKULA", pass: "Anil.jakkula@handler" },
+            };
+
+            // ═══════════════════════════════════════════════════════════════════
+            // STATE
+            // ═══════════════════════════════════════════════════════════════════
+            let STATE = {
+                customers: [],
+                stats: {},
+                logs: [],
+                searchQuery: "",
+                filterStatus: "all",
+                filterPlan: "all",
+                sortBy: "name",
+                editingId: null,
+                autoRefreshId: null,
+                section: "overview",
+            };
+
+            // ═══════════════════════════════════════════════════════════════════
+            // AUTH
+            // ═══════════════════════════════════════════════════════════════════
+            function checkAuth() {
+                return localStorage.getItem("mh_auth") === "1";
+            }
+            function doLogin() {
+                const u = document.getElementById("l-user").value.trim();
+                const p = document.getElementById("l-pass").value;
+                const err = document.getElementById("login-err");
+                const btn = document.getElementById("l-btn");
+                err.style.display = "none";
+                if (u === CONFIG.CREDS.user && p === CONFIG.CREDS.pass) {
+                    if (document.getElementById("l-rem").checked) localStorage.setItem("mh_auth", "1");
+                    bootApp();
+                } else {
+                    err.textContent = "Invalid username or password.";
+                    err.style.display = "block";
+                    btn.textContent = "Sign In";
+                }
+            }
+            function logout() {
+                localStorage.removeItem("mh_auth");
+                clearInterval(STATE.autoRefreshId);
+                location.reload();
+            }
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && document.getElementById("login-page").style.display !== "none") doLogin();
+            });
+            function bootApp() {
+                document.getElementById("login-page").style.display = "none";
+                document.getElementById("app").style.display = "flex";
+                loadAll();
+                STATE.autoRefreshId = setInterval(silentRefresh, CONFIG.REFRESH_INTERVAL);
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // API LAYER — All communication with Google Sheets happens here
+            // ═══════════════════════════════════════════════════════════════════
+
+            // GET request
+            async function apiGet(action, params = {}) {
+                const url = new URL(CONFIG.API_URL);
+                url.searchParams.set("action", action);
+                url.searchParams.set("t", Date.now()); // Cache bust
+                Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+                const res = await fetch(url.toString(), { mode: "cors", cache: "no-store" });
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                return res.json();
+            }
+
+            // POST request — this is what WRITES to Google Sheets
+            async function apiPost(action, payload = {}) {
+                const res = await fetch(CONFIG.API_URL, {
+                    method: "POST",
+                    mode: "cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action, ...payload }),
+                });
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                const text = await res.text();
+                try {
+                    return JSON.parse(text);
+                } catch {
+                    return { success: true };
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // DATA LOADING
+            // ═══════════════════════════════════════════════════════════════════
+            async function loadAll() {
+                setApiStatus("loading");
+                try {
+                    const [custRes, statsRes] = await Promise.all([
+                        apiGet("getCustomers"),
+                        apiGet("getDashboardStats"),
+                    ]);
+                    if (custRes.success) STATE.customers = custRes.data || [];
+                    if (statsRes.success) STATE.stats = statsRes.data || {};
+                    setApiStatus("live");
+                    renderCurrentSection();
+                    updateSideBadges();
+                } catch (e) {
+                    setApiStatus("error");
+                    console.error("Load error:", e);
+                    toast("Could not reach Google Sheets API. Check your Apps Script URL.", "error");
+                }
+            }
+
+            async function silentRefresh() {
+                try {
+                    const [custRes, statsRes] = await Promise.all([
+                        apiGet("getCustomers"),
+                        apiGet("getDashboardStats"),
+                    ]);
+                    if (custRes.success) STATE.customers = custRes.data || [];
+                    if (statsRes.success) STATE.stats = statsRes.data || {};
+                    setApiStatus("live");
+                    renderCurrentSection();
+                    updateSideBadges();
+                } catch (e) {
+                    setApiStatus("error");
+                }
+            }
+
+            async function manualRefresh() {
+                const ico = document.getElementById("refresh-ico");
+                ico.style.animation = "spin .7s linear infinite";
+                await loadAll();
+                ico.style.animation = "";
+                toast("Data refreshed from Google Sheets", "success");
+            }
+
+            function updateSideBadges() {
+                const cc = document.getElementById("cust-count-badge");
+                if (cc) cc.textContent = STATE.customers.length;
+                const pp = STATE.customers.filter((c) => c.paymentStatus === "pending").length;
+                const pb = document.getElementById("pay-badge");
+                if (pb) {
+                    pb.textContent = pp;
+                    pb.style.display = pp > 0 ? "inline-block" : "none";
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // NAVIGATION
+            // ═══════════════════════════════════════════════════════════════════
+            const PAGE_TITLES = {
+                overview: "Overview",
+                customers: "Customers",
+                deliveries: "Deliveries",
+                payments: "Payments",
+                reports: "Reports",
+                settings: "Settings",
+            };
+            const PAGE_SUBS = {
+                overview: "Live dashboard analytics",
+                customers: "Manage all subscribers",
+                deliveries: "Track meal deliveries",
+                payments: "Payment tracking",
+                reports: "Analytics & exports",
+                settings: "System configuration",
+            };
+
+            function showSection(name, el) {
+                STATE.section = name;
+                document.querySelectorAll(".sidebar-link").forEach((l) => l.classList.remove("active"));
+                if (el) el.classList.add("active");
+                document.getElementById("page-title").textContent = PAGE_TITLES[name] || name;
+                document.getElementById("page-sub").textContent = PAGE_SUBS[name] || "";
+                renderCurrentSection();
+            }
+
+            function renderCurrentSection() {
+                const pc = document.getElementById("page-content");
+                pc.innerHTML = "";
+                if (STATE.section === "overview") renderOverview();
+                if (STATE.section === "customers") renderCustomers();
+                if (STATE.section === "deliveries") renderDeliveries();
+                if (STATE.section === "payments") renderPayments();
+                if (STATE.section === "reports") renderReports();
+                if (STATE.section === "settings") renderSettings();
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SECTION: OVERVIEW DASHBOARD
+            // ═══════════════════════════════════════════════════════════════════
+            function renderOverview() {
+                const s = STATE.stats;
+                const c = STATE.customers;
+                const pc = document.getElementById("page-content");
+                pc.innerHTML = `<div class="section">
+
+    <!-- STAT CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px">
+      ${statCard("Total Customers", s.total || c.length, "blue", '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>')}
+      ${statCard("Active Subscriptions", s.active || c.filter((x) => x.status === "active").length, "green", '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>')}
+      ${statCard("Delivered Today", s.todayDel || 0, "indigo", '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>')}
+      ${statCard("Remaining Deliveries", s.totalRem || c.reduce((a, x) => a + (parseInt(x.remainingMeals) || 0), 0), "yellow", '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>')}
+      ${statCard("Pending Payments", s.pendingPay || c.filter((x) => x.paymentStatus === "pending").length, "red", '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>')}
+      ${statCard("Expiring in 7 Days", s.expireSoon || 0, "orange", '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+      <!-- DELIVERY PROGRESS CHART -->
+      <div class="data-card" style="padding:20px">
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:16px">Delivery Usage — Top 10</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:100px" id="usage-chart"></div>
+        <div style="display:flex;gap:6px;margin-top:6px" id="usage-labels"></div>
+      </div>
+
+      <!-- STATUS DISTRIBUTION -->
+      <div class="data-card" style="padding:20px">
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:16px">Subscription Status</div>
+        ${buildStatusDist()}
+      </div>
+    </div>
+
+    <!-- RECENT CUSTOMERS -->
+    <div class="data-card">
+      <div style="padding:16px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0">Recent Customers</div>
+        <button class="btn btn-ghost btn-sm" onclick="showSection('customers',document.querySelector('[onclick*=customers]'))">View All</button>
+      </div>
+      <div style="overflow-x:auto">
+        ${buildCustomerTable(c.slice(-8).reverse(), true)}
+      </div>
+    </div>
+  </div>`;
+
+                // Build usage chart
+                buildUsageChart();
+            }
+
+            function statCard(label, value, color, iconPath) {
+                const colors = {
+                    blue: { bg: "rgba(29,78,216,.12)", txt: "#60a5fa", bdr: "rgba(29,78,216,.25)" },
+                    green: { bg: "rgba(5,150,105,.12)", txt: "#34d399", bdr: "rgba(5,150,105,.25)" },
+                    red: { bg: "rgba(220,38,38,.12)", txt: "#f87171", bdr: "rgba(220,38,38,.25)" },
+                    yellow: { bg: "rgba(217,119,6,.12)", txt: "#fbbf24", bdr: "rgba(217,119,6,.25)" },
+                    indigo: { bg: "rgba(99,102,241,.12)", txt: "#a5b4fc", bdr: "rgba(99,102,241,.25)" },
+                    orange: { bg: "rgba(234,88,12,.12)", txt: "#fb923c", bdr: "rgba(234,88,12,.25)" },
+                };
+                const col = colors[color] || colors.blue;
+                return `<div class="stat-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:.5px">${label}</div>
+      <div style="width:32px;height:32px;border-radius:8px;background:${col.bg};border:1px solid ${col.bdr};display:flex;align-items:center;justify-content:center">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${col.txt}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconPath}</svg>
+      </div>
+    </div>
+    <div style="font-size:28px;font-weight:800;color:#e2e8f0;letter-spacing:-1px">${value}</div>
+  </div>`;
+            }
+
+            function buildStatusDist() {
+                const c = STATE.customers;
+                const total = c.length || 1;
+                const active = c.filter((x) => x.status === "active").length;
+                const paused = c.filter((x) => x.status === "paused").length;
+                const expired = c.filter((x) => x.status === "expired").length;
+                const rows = [
+                    { label: "Active", count: active, color: "#34d399", bg: "rgba(5,150,105,.15)" },
+                    { label: "Paused", count: paused, color: "#fbbf24", bg: "rgba(217,119,6,.15)" },
+                    { label: "Expired", count: expired, color: "#f87171", bg: "rgba(220,38,38,.15)" },
+                ];
+                return rows
+                    .map(
+                        (r) => `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div style="font-size:13px;color:#94a3b8">${r.label}</div>
+        <div style="font-size:13px;font-weight:600;color:#e2e8f0">${r.count} <span style="color:#475569;font-weight:400">/ ${total}</span></div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.round((r.count / total) * 100)}%;background:${r.color}"></div></div>
+    </div>
+  `
+                    )
+                    .join("");
+            }
+
+            function buildUsageChart() {
+                const el = document.getElementById("usage-chart");
+                const le = document.getElementById("usage-labels");
+                if (!el) return;
+                const top = [...STATE.customers]
+                    .sort((a, b) => (parseInt(b.deliveredMeals) || 0) - (parseInt(a.deliveredMeals) || 0))
+                    .slice(0, 10);
+                if (!top.length) {
+                    el.innerHTML = '<div style="color:#475569;font-size:13px">No data</div>';
+                    return;
+                }
+                const max = Math.max(...top.map((c) => parseInt(c.deliveredMeals) || 0), 1);
+                const colors = [
+                    "#3b82f6",
+                    "#10b981",
+                    "#f59e0b",
+                    "#8b5cf6",
+                    "#ef4444",
+                    "#06b6d4",
+                    "#84cc16",
+                    "#f97316",
+                    "#ec4899",
+                    "#6366f1",
+                ];
+                el.innerHTML = top
+                    .map((c, i) => {
+                        const h = Math.max(Math.round(((parseInt(c.deliveredMeals) || 0) / max) * 92), 3);
+                        return `<div class="chart-bar" style="background:${colors[i % colors.length]};height:0" data-h="${h}"><div class="chart-bar-tip">${c.name}: ${c.deliveredMeals} delivered</div></div>`;
+                    })
+                    .join("");
+                le.innerHTML = top
+                    .map(
+                        (c) =>
+                            `<div style="flex:1;font-size:9px;color:#475569;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${(c.name || "").split(" ")[0]}</div>`
+                    )
+                    .join("");
+                setTimeout(
+                    () => el.querySelectorAll(".chart-bar").forEach((b) => (b.style.height = b.dataset.h + "px")),
+                    60
+                );
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SECTION: CUSTOMERS
+            // ═══════════════════════════════════════════════════════════════════
+            function renderCustomers() {
+                const pc = document.getElementById("page-content");
+                const s = STATE;
+                pc.innerHTML = `<div class="section">
+    <!-- CONTROLS -->
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px">
+      <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:9px 12px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="cust-search" placeholder="Search name, phone, address…" value="${s.searchQuery}"
+          style="background:none;border:none;outline:none;color:#e2e8f0;font-size:14px;width:100%"
+          oninput="STATE.searchQuery=this.value;renderCustomers()">
+      </div>
+      <select style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#e2e8f0;font-size:13px;outline:none"
+        onchange="STATE.filterStatus=this.value;renderCustomers()">
+        <option value="all" ${s.filterStatus === "all" ? "selected" : ""}>All Status</option>
+        <option value="active" ${s.filterStatus === "active" ? "selected" : ""}>Active</option>
+        <option value="paused" ${s.filterStatus === "paused" ? "selected" : ""}>Paused</option>
+        <option value="expired" ${s.filterStatus === "expired" ? "selected" : ""}>Expired</option>
+      </select>
+      <select style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#e2e8f0;font-size:13px;outline:none"
+        onchange="STATE.filterPlan=this.value;renderCustomers()">
+        <option value="all" ${s.filterPlan === "all" ? "selected" : ""}>All Plans</option>
+        <option value="basic" ${s.filterPlan === "basic" ? "selected" : ""}>Basic</option>
+        <option value="standard" ${s.filterPlan === "standard" ? "selected" : ""}>Standard</option>
+        <option value="premium" ${s.filterPlan === "premium" ? "selected" : ""}>Premium</option>
+      </select>
+      <select style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:9px 12px;color:#e2e8f0;font-size:13px;outline:none"
+        onchange="STATE.sortBy=this.value;renderCustomers()">
+        <option value="name"      ${s.sortBy === "name" ? "selected" : ""}>Sort: Name</option>
+        <option value="remaining" ${s.sortBy === "remaining" ? "selected" : ""}>Sort: Remaining</option>
+        <option value="delivered" ${s.sortBy === "delivered" ? "selected" : ""}>Sort: Delivered</option>
+        <option value="status"    ${s.sortBy === "status" ? "selected" : ""}>Sort: Status</option>
+        <option value="plan"      ${s.sortBy === "plan" ? "selected" : ""}>Sort: Plan</option>
+      </select>
+    </div>
+
+    <!-- TABLE -->
+    <div class="data-card" style="overflow:hidden">
+      <div style="overflow-x:auto">${buildCustomerTable(getFilteredCustomers(), false)}</div>
+    </div>
+  </div>`;
+            }
+
+            function getFilteredCustomers() {
+                let d = [...STATE.customers];
+                const q = STATE.searchQuery.toLowerCase();
+                if (q)
+                    d = d.filter(
+                        (c) =>
+                            (c.name || "").toLowerCase().includes(q) ||
+                            (c.phone || "").includes(q) ||
+                            (c.address || "").toLowerCase().includes(q)
+                    );
+                if (STATE.filterStatus !== "all") d = d.filter((c) => c.status === STATE.filterStatus);
+                if (STATE.filterPlan !== "all") d = d.filter((c) => c.plan === STATE.filterPlan);
+                if (STATE.sortBy === "name") d.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                if (STATE.sortBy === "remaining")
+                    d.sort((a, b) => (parseInt(b.remainingMeals) || 0) - (parseInt(a.remainingMeals) || 0));
+                if (STATE.sortBy === "delivered")
+                    d.sort((a, b) => (parseInt(b.deliveredMeals) || 0) - (parseInt(a.deliveredMeals) || 0));
+                if (STATE.sortBy === "status") d.sort((a, b) => (a.status || "").localeCompare(b.status || ""));
+                if (STATE.sortBy === "plan") d.sort((a, b) => (a.plan || "").localeCompare(b.plan || ""));
+                return d;
+            }
+
+            function buildCustomerTable(customers, compact) {
+                if (!customers.length)
+                    return `<div style="text-align:center;padding:48px 20px"><div style="font-size:36px;margin-bottom:12px;opacity:.4">📭</div><div style="font-size:15px;font-weight:600;color:#64748b;margin-bottom:6px">No customers found</div><div style="font-size:13px;color:#475569">Try adjusting search or add a new customer.</div></div>`;
+
+                const headers = compact
+                    ? ["Name", "Phone", "Plan", "Remaining", "Status", "Actions"]
+                    : [
+                          "ID",
+                          "Name",
+                          "Phone",
+                          "Plan",
+                          "Total",
+                          "Delivered",
+                          "Remaining",
+                          "Expiry",
+                          "Status",
+                          "Payment",
+                          "Actions",
+                      ];
+
+                return `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="border-bottom:1px solid #334155">
+      ${headers.map((h) => `<th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap">${h}</th>`).join("")}
+    </tr></thead>
+    <tbody>
+      ${customers.map((c) => buildCustomerRow(c, compact)).join("")}
+    </tbody>
+  </table>`;
+            }
+
+            function buildCustomerRow(c, compact) {
+                const rem = parseInt(c.remainingMeals) || 0;
+                const del = parseInt(c.deliveredMeals) || 0;
+                const tot = parseInt(c.totalMeals) || 0;
+                const pct = tot > 0 ? Math.round((del / tot) * 100) : 0;
+                const statusBadge =
+                    {
+                        active: "badge-green",
+                        paused: "badge-yellow",
+                        expired: "badge-red",
+                    }[c.status] || "badge-gray";
+                const payBadge =
+                    {
+                        paid: "badge-green",
+                        pending: "badge-red",
+                        partial: "badge-yellow",
+                    }[c.paymentStatus] || "badge-gray";
+                const remColor = rem === 0 ? "#f87171" : rem <= 3 ? "#f59e0b" : "#34d399";
+
+                const initials = (c.name || "?")
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+                const avatarColors = ["#1d4ed8", "#059669", "#dc2626", "#7c3aed", "#0891b2", "#d97706"];
+                const avBg = avatarColors[(parseInt(c.id?.replace(/\D/g, "").slice(-3)) || 0) % avatarColors.length];
+
+                if (compact) {
+                    return `<tr class="table-row">
+      <td style="padding:12px 16px;white-space:nowrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:8px;background:${avBg};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${initials}</div>
+          <div><div style="font-size:14px;font-weight:500;color:#e2e8f0">${esc(c.name)}</div><div style="font-size:11px;color:#64748b">${c.address || ""}</div></div>
+        </div>
+      </td>
+      <td style="padding:12px 16px;font-size:13px;color:#94a3b8">${c.phone || "—"}</td>
+      <td style="padding:12px 16px"><span class="badge badge-blue">${c.plan || "—"}</span></td>
+      <td style="padding:12px 16px;font-size:14px;font-weight:700;color:${remColor}">${rem}</td>
+      <td style="padding:12px 16px"><span class="badge ${statusBadge}">${c.status}</span></td>
+      <td style="padding:12px 16px;white-space:nowrap">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openDetail('${c.id}')">View</button>
+          <button class="btn btn-primary btn-sm" onclick="openEditCustomer('${c.id}')">Edit</button>
+        </div>
+      </td>
+    </tr>`;
+                }
+
+                return `<tr class="table-row">
+    <td style="padding:12px 16px;font-size:12px;color:#475569;font-family:monospace">${(c.id || "").toString().slice(-6)}</td>
+    <td style="padding:12px 16px;white-space:nowrap">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:8px;background:${avBg};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${initials}</div>
+        <div>
+          <div style="font-size:14px;font-weight:500;color:#e2e8f0">${esc(c.name)}</div>
+          <div style="font-size:11px;color:#64748b">${c.address || ""}</div>
+        </div>
+      </div>
+    </td>
+    <td style="padding:12px 16px;font-size:13px;color:#94a3b8">${c.phone || "—"}</td>
+    <td style="padding:12px 16px"><span class="badge badge-blue">${c.plan || "—"}</span></td>
+    <td style="padding:12px 16px;font-size:13px;color:#94a3b8;text-align:center">${tot}</td>
+    <td style="padding:12px 16px;font-size:13px;color:#94a3b8;text-align:center">${del}</td>
+    <td style="padding:12px 16px;font-size:14px;font-weight:700;color:${remColor};text-align:center">${rem}</td>
+    <td style="padding:12px 16px;font-size:12px;color:#64748b;white-space:nowrap">${c.expiryDate || "—"}</td>
+    <td style="padding:12px 16px"><span class="badge ${statusBadge}">${c.status}</span></td>
+    <td style="padding:12px 16px"><span class="badge ${payBadge}">${c.paymentStatus}</span></td>
+    <td style="padding:12px 16px;white-space:nowrap">
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="openDetail('${c.id}')">Detail</button>
+        <button class="btn btn-primary btn-sm" onclick="openEditCustomer('${c.id}')">Edit</button>
+        ${c.status === "active" ? `<button class="btn btn-success btn-sm" onclick="doMarkDelivered('${c.id}','${esc(c.name)}',${rem})">+Deliver</button>` : ""}
+        ${c.status === "active" ? `<button class="btn btn-warn btn-sm" onclick="doPause('${c.id}')">Pause</button>` : ""}
+        ${c.status === "paused" ? `<button class="btn btn-success btn-sm" onclick="doResume('${c.id}')">Resume</button>` : ""}
+      </div>
+    </td>
+  </tr>`;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SECTION: DELIVERIES
+            // ═══════════════════════════════════════════════════════════════════
+            function renderDeliveries() {
+                const pc = document.getElementById("page-content");
+                const active = STATE.customers.filter((c) => c.status === "active");
+                pc.innerHTML = `<div class="section">
+    <div style="margin-bottom:16px;font-size:13px;color:#64748b">${active.length} active subscriptions — click "Mark Delivered" to log a delivery and auto-update Google Sheets.</div>
+    <div class="data-card" style="overflow:hidden">
+      <div style="padding:14px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0">Active Subscribers — Today's Deliveries</div>
+        <div class="badge badge-green">${active.length} Active</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid #334155">
+            ${["Name", "Phone", "Plan", "Total", "Delivered", "Remaining", "Progress", "Actions"].map((h) => `<th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px">${h}</th>`).join("")}
+          </tr></thead>
+          <tbody>
+            ${
+                active.length
+                    ? active
+                          .map((c) => {
+                              const rem = parseInt(c.remainingMeals) || 0,
+                                  del = parseInt(c.deliveredMeals) || 0,
+                                  tot = parseInt(c.totalMeals) || 1;
+                              const pct = Math.round((del / tot) * 100);
+                              const rc = rem === 0 ? "#f87171" : rem <= 3 ? "#f59e0b" : "#34d399";
+                              return `<tr class="table-row">
+                <td style="padding:12px 16px;font-size:14px;font-weight:500;color:#e2e8f0">${esc(c.name)}</td>
+                <td style="padding:12px 16px;font-size:13px;color:#94a3b8">${c.phone || "—"}</td>
+                <td style="padding:12px 16px"><span class="badge badge-blue">${c.plan}</span></td>
+                <td style="padding:12px 16px;font-size:13px;color:#94a3b8;text-align:center">${tot}</td>
+                <td style="padding:12px 16px;font-size:13px;color:#94a3b8;text-align:center">${del}</td>
+                <td style="padding:12px 16px;font-size:14px;font-weight:700;color:${rc};text-align:center">${rem}</td>
+                <td style="padding:12px 16px;min-width:120px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div class="prog-bar" style="flex:1"><div class="prog-fill" style="width:${pct}%;background:${rc}"></div></div>
+                    <div style="font-size:11px;color:#64748b;width:28px;text-align:right">${pct}%</div>
+                  </div>
+                </td>
+                <td style="padding:12px 16px;white-space:nowrap">
+                  <div style="display:flex;gap:6px">
+                    <button class="btn btn-success btn-sm" onclick="doMarkDelivered('${c.id}','${esc(c.name)}',${rem})" ${rem <= 0 ? "disabled" : ""}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Mark Delivered
+                    </button>
+                    <button class="btn btn-warn btn-sm" onclick="doPause('${c.id}')">Pause</button>
+                  </div>
+                </td>
+              </tr>`;
+                          })
+                          .join("")
+                    : '<tr><td colspan="8" style="padding:40px;text-align:center;color:#475569">No active subscriptions</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAUSED SECTION -->
+    ${
+        STATE.customers.filter((c) => c.status === "paused").length
+            ? `
+    <div class="data-card" style="margin-top:16px;overflow:hidden">
+      <div style="padding:14px 20px;border-bottom:1px solid #334155">
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0">Paused Subscriptions</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid #334155">
+            ${["Name", "Phone", "Plan", "Remaining", "Actions"].map((h) => `<th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase">${h}</th>`).join("")}
+          </tr></thead>
+          <tbody>
+            ${STATE.customers
+                .filter((c) => c.status === "paused")
+                .map(
+                    (c) => `
+              <tr class="table-row">
+                <td style="padding:12px 16px;font-size:14px;font-weight:500;color:#e2e8f0">${esc(c.name)}</td>
+                <td style="padding:12px 16px;font-size:13px;color:#94a3b8">${c.phone || "—"}</td>
+                <td style="padding:12px 16px"><span class="badge badge-blue">${c.plan}</span></td>
+                <td style="padding:12px 16px;font-size:14px;font-weight:700;color:#f59e0b">${c.remainingMeals || 0}</td>
+                <td style="padding:12px 16px">
+                  <button class="btn btn-success btn-sm" onclick="doResume('${c.id}')">Resume</button>
+                </td>
+              </tr>
+            `
+                )
+                .join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>`
+            : ""
+    }
+  </div>`;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SECTION: PAYMENTS
+            // ═══════════════════════════════════════════════════════════════════
+            function renderPayments() {
+                const pc = document.getElementById("page-content");
+                const all = STATE.customers;
+                const pending = all.filter((c) => c.paymentStatus === "pending");
+                const paid = all.filter((c) => c.paymentStatus === "paid");
+                const partial = all.filter((c) => c.paymentStatus === "partial");
+
+                pc.innerHTML = `<div class="section">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+      <div class="stat-card">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Paid</div>
+        <div style="font-size:28px;font-weight:800;color:#34d399">${paid.length}</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Pending</div>
+        <div style="font-size:28px;font-weight:800;color:#f87171">${pending.length}</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Partial</div>
+        <div style="font-size:28px;font-weight:800;color:#fbbf24">${partial.length}</div>
+      </div>
+    </div>
+    <div class="data-card" style="overflow:hidden">
+      <div style="padding:14px 20px;border-bottom:1px solid #334155">
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0">All Payment Records</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid #334155">
+            ${["Name", "Phone", "Plan", "Status", "Payment Status", "Update Payment"].map((h) => `<th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase">${h}</th>`).join("")}
+          </tr></thead>
+          <tbody>
+            ${
+                all.length
+                    ? all
+                          .map((c) => {
+                              const payBadge =
+                                  { paid: "badge-green", pending: "badge-red", partial: "badge-yellow" }[
+                                      c.paymentStatus
+                                  ] || "badge-gray";
+                              const stBadge =
+                                  { active: "badge-green", paused: "badge-yellow", expired: "badge-red" }[c.status] ||
+                                  "badge-gray";
+                              return `<tr class="table-row">
+                <td style="padding:12px 16px;font-size:14px;font-weight:500;color:#e2e8f0">${esc(c.name)}</td>
+                <td style="padding:12px 16px;font-size:13px;color:#94a3b8">${c.phone || "—"}</td>
+                <td style="padding:12px 16px"><span class="badge badge-blue">${c.plan}</span></td>
+                <td style="padding:12px 16px"><span class="badge ${stBadge}">${c.status}</span></td>
+                <td style="padding:12px 16px"><span class="badge ${payBadge}">${c.paymentStatus}</span></td>
+                <td style="padding:12px 16px">
+                  <select style="background:#0f172a;border:1px solid #334155;border-radius:6px;padding:6px 10px;color:#e2e8f0;font-size:13px;outline:none;cursor:pointer"
+                    onchange="doUpdatePayment('${c.id}',this.value,this)">
+                    <option value="paid"    ${c.paymentStatus === "paid" ? "selected" : ""}>Paid</option>
+                    <option value="pending" ${c.paymentStatus === "pending" ? "selected" : ""}>Pending</option>
+                    <option value="partial" ${c.paymentStatus === "partial" ? "selected" : ""}>Partial</option>
+                  </select>
+                </td>
+              </tr>`;
+                          })
+                          .join("")
+                    : '<tr><td colspan="6" style="padding:40px;text-align:center;color:#475569">No customers</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SECTION: REPORTS
+            // ═══════════════════════════════════════════════════════════════════
+            function renderReports() {
+                const pc = document.getElementById("page-content");
+                const c = STATE.customers;
+                const totalMeals = c.reduce((a, x) => a + (parseInt(x.totalMeals) || 0), 0);
+                const totalDel = c.reduce((a, x) => a + (parseInt(x.deliveredMeals) || 0), 0);
+                const totalRem = c.reduce((a, x) => a + (parseInt(x.remainingMeals) || 0), 0);
+                const pct = totalMeals > 0 ? Math.round((totalDel / totalMeals) * 100) : 0;
+
+                pc.innerHTML = `<div class="section">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px">
+      <div class="stat-card"><div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:10px">Total Meals Subscribed</div><div style="font-size:28px;font-weight:800;color:#e2e8f0">${totalMeals}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:10px">Total Delivered</div><div style="font-size:28px;font-weight:800;color:#34d399">${totalDel}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:10px">Total Remaining</div><div style="font-size:28px;font-weight:800;color:#f59e0b">${totalRem}</div></div>
+      <div class="stat-card"><div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-bottom:10px">Overall Completion</div><div style="font-size:28px;font-weight:800;color:#60a5fa">${pct}%</div></div>
+    </div>
+
+    <!-- OVERALL PROGRESS -->
+    <div class="data-card" style="padding:20px;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:14px">Overall Delivery Progress</div>
+      <div class="prog-bar" style="height:12px;margin-bottom:8px"><div class="prog-fill" style="width:${pct}%;background:linear-gradient(90deg,#3b82f6,#10b981)"></div></div>
+      <div style="font-size:13px;color:#64748b">${totalDel} of ${totalMeals} meals delivered (${pct}%)</div>
+    </div>
+
+    <!-- CUSTOMER REPORT TABLE -->
+    <div class="data-card" style="overflow:hidden">
+      <div style="padding:14px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;font-weight:600;color:#e2e8f0">Per-Customer Report</div>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="border-bottom:1px solid #334155">
+            ${["Name", "Plan", "Total", "Delivered", "Remaining", "% Done", "Status", "Expiry"].map((h) => `<th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase">${h}</th>`).join("")}
+          </tr></thead>
+          <tbody>
+            ${c
+                .map((cu) => {
+                    const tot = parseInt(cu.totalMeals) || 0,
+                        del = parseInt(cu.deliveredMeals) || 0,
+                        rem = parseInt(cu.remainingMeals) || 0;
+                    const p = tot > 0 ? Math.round((del / tot) * 100) : 0;
+                    const sb =
+                        { active: "badge-green", paused: "badge-yellow", expired: "badge-red" }[cu.status] ||
+                        "badge-gray";
+                    const rc = rem === 0 ? "#f87171" : rem <= 3 ? "#f59e0b" : "#34d399";
+                    return `<tr class="table-row">
+                <td style="padding:12px 16px;font-size:14px;font-weight:500;color:#e2e8f0">${esc(cu.name)}</td>
+                <td style="padding:12px 16px"><span class="badge badge-blue">${cu.plan}</span></td>
+                <td style="padding:12px 16px;font-size:13px;color:#94a3b8;text-align:center">${tot}</td>
+                <td style="padding:12px 16px;font-size:13px;color:#94a3b8;text-align:center">${del}</td>
+                <td style="padding:12px 16px;font-size:14px;font-weight:700;color:${rc};text-align:center">${rem}</td>
+                <td style="padding:12px 16px;min-width:110px">
+                  <div style="display:flex;align-items:center;gap:7px">
+                    <div class="prog-bar" style="flex:1;height:5px"><div class="prog-fill" style="width:${p}%;background:#3b82f6"></div></div>
+                    <div style="font-size:11px;color:#64748b;width:28px">${p}%</div>
+                  </div>
+                </td>
+                <td style="padding:12px 16px"><span class="badge ${sb}">${cu.status}</span></td>
+                <td style="padding:12px 16px;font-size:12px;color:#64748b">${cu.expiryDate || "—"}</td>
+              </tr>`;
+                })
+                .join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SECTION: SETTINGS
+            // ═══════════════════════════════════════════════════════════════════
+            function renderSettings() {
+                const pc = document.getElementById("page-content");
+                pc.innerHTML = `<div class="section" style="max-width:640px">
+    <div class="data-card" style="padding:24px;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:4px">API Configuration</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:18px">Update the Google Apps Script API endpoint below.</div>
+      <label class="detail-label">Google Apps Script URL</label>
+      <input class="inp" type="url" id="set-api" value="${CONFIG.API_URL}" style="margin-bottom:12px" placeholder="https://script.google.com/macros/s/…/exec">
+      <button class="btn btn-primary" onclick="saveApiUrl()">Save API URL</button>
+    </div>
+    <div class="data-card" style="padding:24px;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:4px">Auto-Refresh</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:18px">Dashboard refreshes from Google Sheets every 5 seconds automatically.</div>
+      <div style="display:flex;align-items:center;gap:12px;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:14px">
+        <div style="width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse 2s infinite"></div>
+        <div style="font-size:14px;color:#e2e8f0">Auto-refresh active — every ${CONFIG.REFRESH_INTERVAL / 1000} seconds</div>
+      </div>
+    </div>
+    <div class="data-card" style="padding:24px">
+      <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:4px">Admin Account</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:18px">Logged in as Anil Jakkula.</div>
+      <button class="btn btn-danger" onclick="logout()">Sign Out</button>
+    </div>
+  </div>`;
+            }
+
+            function saveApiUrl() {
+                const v = document.getElementById("set-api").value.trim();
+                if (!v) {
+                    toast("Please enter a valid URL", "error");
+                    return;
+                }
+                CONFIG.API_URL = v;
+                localStorage.setItem("mh_api_url", v);
+                toast("API URL updated. Refreshing data…", "success");
+                loadAll();
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // CUSTOMER DETAIL MODAL
+            // ═══════════════════════════════════════════════════════════════════
+            function openDetail(id) {
+                const c = STATE.customers.find((x) => x.id === id || x.id == id);
+                if (!c) {
+                    toast("Customer not found", "error");
+                    return;
+                }
+                const rem = parseInt(c.remainingMeals) || 0,
+                    del = parseInt(c.deliveredMeals) || 0,
+                    tot = parseInt(c.totalMeals) || 1;
+                const pct = Math.round((del / tot) * 100);
+                const rc = rem === 0 ? "#f87171" : rem <= 3 ? "#f59e0b" : "#34d399";
+                const statusBadge =
+                    { active: "badge-green", paused: "badge-yellow", expired: "badge-red" }[c.status] || "badge-gray";
+                const payBadge =
+                    { paid: "badge-green", pending: "badge-red", partial: "badge-yellow" }[c.paymentStatus] ||
+                    "badge-gray";
+
+                document.getElementById("detail-content").innerHTML = `
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+      <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#1d4ed8,#0891b2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0">
+        ${(c.name || "?")
+            .split(" ")
+            .map((w) => w[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2)}
+      </div>
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#e2e8f0">${esc(c.name)}</div>
+        <div style="font-size:13px;color:#64748b;margin-top:2px">${c.phone || "—"} · ${c.address || "—"}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <span class="badge ${statusBadge}">${c.status}</span>
+          <span class="badge badge-blue">${c.plan}</span>
+          <span class="badge ${payBadge}">${c.paymentStatus}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Progress -->
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:13px;color:#64748b">Delivery Progress</div>
+        <div style="font-size:13px;font-weight:600;color:#e2e8f0">${del} / ${tot} meals</div>
+      </div>
+      <div class="prog-bar" style="height:8px;margin-bottom:10px"><div class="prog-fill" style="width:${pct}%;background:linear-gradient(90deg,#3b82f6,#10b981)"></div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+        <div><div style="font-size:22px;font-weight:800;color:#60a5fa">${tot}</div><div style="font-size:11px;color:#475569;text-transform:uppercase">Total</div></div>
+        <div><div style="font-size:22px;font-weight:800;color:#34d399">${del}</div><div style="font-size:11px;color:#475569;text-transform:uppercase">Delivered</div></div>
+        <div><div style="font-size:22px;font-weight:800;color:${rc}">${rem}</div><div style="font-size:11px;color:#475569;text-transform:uppercase">Remaining</div></div>
+      </div>
+    </div>
+
+    <!-- Info Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      ${[
+          ["Start Date", c.startDate || "—"],
+          ["Expiry Date", c.expiryDate || "—"],
+          ["Plan", c.plan],
+          ["Customer ID", (c.id || "").toString().slice(-8)],
+      ]
+          .map(
+              ([l, v]) =>
+                  `<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px"><div class="detail-label">${l}</div><div class="detail-val">${v}</div></div>`
+          )
+          .join("")}
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button class="btn btn-primary" onclick="openEditCustomer('${c.id}');closeModal('detail-modal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </button>
+      ${
+          c.status === "active"
+              ? `<button class="btn btn-success" onclick="doMarkDelivered('${c.id}','${esc(c.name)}',${rem});closeModal('detail-modal')" ${rem <= 0 ? "disabled" : ""}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark Delivered
+      </button>`
+              : ""
+      }
+      ${c.status === "active" ? `<button class="btn btn-warn" onclick="doPause('${c.id}');closeModal('detail-modal')">Pause</button>` : ""}
+      ${c.status === "paused" ? `<button class="btn btn-success" onclick="doResume('${c.id}');closeModal('detail-modal')">Resume</button>` : ""}
+      <button class="btn btn-ghost" onclick="window.open('https://wa.me/91${c.phone}','_blank')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+        WhatsApp
+      </button>
+      <button class="btn btn-ghost" onclick="window.open('tel:${c.phone}')">Call</button>
+      <button class="btn btn-danger" onclick="openDeleteConfirm('${c.id}','${esc(c.name)}');closeModal('detail-modal')">Delete</button>
+    </div>
+  `;
+                openModal("detail-modal");
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // FORM OPERATIONS — ADD / EDIT
+            // ═══════════════════════════════════════════════════════════════════
+            function openAddCustomer() {
+                STATE.editingId = null;
+                document.getElementById("cust-modal-title").textContent = "Add New Customer";
+                document.getElementById("f-name").value = "";
+                document.getElementById("f-phone").value = "";
+                document.getElementById("f-addr").value = "";
+                document.getElementById("f-plan").value = "basic";
+                document.getElementById("f-total").value = "";
+                document.getElementById("f-delivered").value = "0";
+                document.getElementById("f-start").valueAsDate = new Date();
+                document.getElementById("f-expiry").value = "";
+                document.getElementById("f-status").value = "active";
+                document.getElementById("f-pay").value = "paid";
+                document.getElementById("form-del-btn").style.display = "none";
+                document.getElementById("form-err").style.display = "none";
+                document.getElementById("form-save-btn").textContent = "Add Customer";
+                openModal("cust-modal");
+            }
+
+            function openEditCustomer(id) {
+                const c = STATE.customers.find((x) => x.id === id || x.id == id);
+                if (!c) {
+                    toast("Customer not found", "error");
+                    return;
+                }
+                STATE.editingId = id;
+                document.getElementById("cust-modal-title").textContent = "Edit: " + c.name;
+                document.getElementById("f-name").value = c.name || "";
+                document.getElementById("f-phone").value = c.phone || "";
+                document.getElementById("f-addr").value = c.address || "";
+                document.getElementById("f-plan").value = c.plan || "basic";
+                document.getElementById("f-total").value = c.totalMeals || 0;
+                document.getElementById("f-delivered").value = c.deliveredMeals || 0;
+                document.getElementById("f-start").value = c.startDate || "";
+                document.getElementById("f-expiry").value = c.expiryDate || "";
+                document.getElementById("f-status").value = c.status || "active";
+                document.getElementById("f-pay").value = c.paymentStatus || "paid";
+                document.getElementById("form-del-btn").style.display = "inline-flex";
+                document.getElementById("form-err").style.display = "none";
+                document.getElementById("form-save-btn").textContent = "Save Changes";
+                openModal("cust-modal");
+            }
+
+            async function submitCustomerForm() {
+                const name = document.getElementById("f-name").value.trim();
+                const phone = document.getElementById("f-phone").value.trim();
+                const totalMeals = parseInt(document.getElementById("f-total").value) || 0;
+                const delivered = parseInt(document.getElementById("f-delivered").value) || 0;
+                const err = document.getElementById("form-err");
+                err.style.display = "none";
+
+                if (!name) {
+                    err.textContent = "Name is required.";
+                    err.style.display = "block";
+                    return;
+                }
+                if (!phone || phone.length < 10) {
+                    err.textContent = "Valid 10-digit phone required.";
+                    err.style.display = "block";
+                    return;
+                }
+                if (totalMeals < 1) {
+                    err.textContent = "Total meals must be at least 1.";
+                    err.style.display = "block";
+                    return;
+                }
+                if (delivered > totalMeals) {
+                    err.textContent = "Delivered cannot exceed total meals.";
+                    err.style.display = "block";
+                    return;
+                }
+
+                const data = {
+                    name,
+                    phone,
+                    address: document.getElementById("f-addr").value.trim(),
+                    plan: document.getElementById("f-plan").value,
+                    totalMeals,
+                    deliveredMeals: delivered,
+                    startDate: document.getElementById("f-start").value,
+                    expiryDate: document.getElementById("f-expiry").value,
+                    status: document.getElementById("f-status").value,
+                    paymentStatus: document.getElementById("f-pay").value,
+                };
+
+                const btn = document.getElementById("form-save-btn");
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner"></div> Saving to Google Sheets…';
+
+                try {
+                    let result;
+                    if (STATE.editingId) {
+                        result = await apiPost("updateCustomer", { id: STATE.editingId, data });
+                        toast("Customer updated in Google Sheets!", "success");
+                    } else {
+                        result = await apiPost("addCustomer", { data });
+                        toast("Customer added to Google Sheets!", "success");
+                    }
+                    if (result && result.success === false) throw new Error(result.error || "API error");
+                    closeModal("cust-modal");
+                    await loadAll();
+                } catch (e) {
+                    err.textContent = "Error: " + e.message;
+                    err.style.display = "block";
+                    toast("Failed: " + e.message, "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = STATE.editingId ? "Save Changes" : "Add Customer";
+                }
+            }
+
+            function deleteFromForm() {
+                if (!STATE.editingId) return;
+                const c = STATE.customers.find((x) => x.id === STATE.editingId || x.id == STATE.editingId);
+                closeModal("cust-modal");
+                setTimeout(() => openDeleteConfirm(STATE.editingId, c?.name || "this customer"), 200);
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // ACTION: MARK DELIVERED
+            // ═══════════════════════════════════════════════════════════════════
+            async function doMarkDelivered(id, name, remaining) {
+                if (remaining <= 0) {
+                    toast("No remaining meals for " + name, "error");
+                    return;
+                }
+                if (!confirm(`Mark one delivery for ${name}? Remaining will become ${remaining - 1}.`)) return;
+                toast("Marking delivery for " + name + "…", "info");
+                try {
+                    const result = await apiPost("markDelivered", { id });
+                    if (result.success === false) throw new Error(result.error);
+                    toast(result.message || "Delivery marked!", "success");
+                    await loadAll();
+                } catch (e) {
+                    toast("Error: " + e.message, "error");
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // ACTION: PAUSE / RESUME
+            // ═══════════════════════════════════════════════════════════════════
+            async function doPause(id) {
+                toast("Pausing subscription…", "info");
+                try {
+                    const r = await apiPost("pauseSubscription", { id });
+                    if (r.success === false) throw new Error(r.error);
+                    toast("Subscription paused", "success");
+                    await loadAll();
+                } catch (e) {
+                    toast("Error: " + e.message, "error");
+                }
+            }
+
+            async function doResume(id) {
+                toast("Resuming subscription…", "info");
+                try {
+                    const r = await apiPost("resumeSubscription", { id });
+                    if (r.success === false) throw new Error(r.error);
+                    toast("Subscription resumed", "success");
+                    await loadAll();
+                } catch (e) {
+                    toast("Error: " + e.message, "error");
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // ACTION: DELETE
+            // ═══════════════════════════════════════════════════════════════════
+            function openDeleteConfirm(id, name) {
+                document.getElementById("confirm-body").textContent =
+                    `Delete "${name || "this customer"}" permanently from Google Sheets? This cannot be undone.`;
+                document.getElementById("confirm-yes-btn").onclick = async () => {
+                    closeModal("confirm-modal");
+                    toast("Deleting from Google Sheets…", "info");
+                    try {
+                        const r = await apiPost("deleteCustomer", { id });
+                        if (r.success === false) throw new Error(r.error);
+                        toast("Customer deleted from Google Sheets!", "success");
+                        await loadAll();
+                    } catch (e) {
+                        toast("Error: " + e.message, "error");
+                    }
+                };
+                openModal("confirm-modal");
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // ACTION: UPDATE PAYMENT
+            // ═══════════════════════════════════════════════════════════════════
+            async function doUpdatePayment(id, paymentStatus, selectEl) {
+                try {
+                    const r = await apiPost("updatePayment", { id, paymentStatus });
+                    if (r.success === false) throw new Error(r.error);
+                    toast('Payment status updated to "' + paymentStatus + '"', "success");
+                    await loadAll();
+                } catch (e) {
+                    toast("Error: " + e.message, "error");
+                    selectEl.value = selectEl.dataset.orig;
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // EXPORT CSV
+            // ═══════════════════════════════════════════════════════════════════
+            function exportCSV() {
+                const headers = [
+                    "ID",
+                    "Name",
+                    "Phone",
+                    "Address",
+                    "Plan",
+                    "TotalMeals",
+                    "DeliveredMeals",
+                    "RemainingMeals",
+                    "StartDate",
+                    "ExpiryDate",
+                    "Status",
+                    "PaymentStatus",
+                ];
+                const rows = STATE.customers.map((c) =>
+                    headers
+                        .map((h) => {
+                            const key = h.charAt(0).toLowerCase() + h.slice(1);
+                            const val = c[key] ?? c[h] ?? "";
+                            return '"' + String(val).replace(/"/g, '""') + '"';
+                        })
+                        .join(",")
+                );
+                const csv = [headers.join(","), ...rows].join("\n");
+                const blob = new Blob([csv], { type: "text/csv" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "mana-hub-customers-" + new Date().toISOString().split("T")[0] + ".csv";
+                a.click();
+                toast("CSV exported!", "success");
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // MODAL HELPERS
+            // ═══════════════════════════════════════════════════════════════════
+            function openModal(id) {
+                document.getElementById(id).style.display = "flex";
+            }
+            function closeModal(id) {
+                document.getElementById(id).style.display = "none";
+            }
+            function onModalBgClick(e, id) {
+                if (e.target === document.getElementById(id)) closeModal(id);
+            }
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape")
+                    document.querySelectorAll(".modal-bg").forEach((m) => (m.style.display = "none"));
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // API STATUS
+            // ═══════════════════════════════════════════════════════════════════
+            function setApiStatus(s) {
+                const dot = document.getElementById("api-indicator");
+                const lbl = document.getElementById("api-label");
+                if (!dot) return;
+                if (s === "live") {
+                    dot.style.background = "#10b981";
+                    if (lbl) lbl.textContent = "Live";
+                }
+                if (s === "loading") {
+                    dot.style.background = "#f59e0b";
+                    if (lbl) lbl.textContent = "Loading";
+                }
+                if (s === "error") {
+                    dot.style.background = "#ef4444";
+                    if (lbl) lbl.textContent = "Offline";
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // TOAST NOTIFICATIONS
+            // ═══════════════════════════════════════════════════════════════════
+            const TOAST_ICONS = {
+                success:
+                    '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+                error: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+                info: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+                warn: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>',
+            };
+            function toast(msg, type = "info") {
+                const container = document.getElementById("toast-container");
+                const el = document.createElement("div");
+                el.className = `toast toast-${type}`;
+                el.innerHTML = `${TOAST_ICONS[type] || ""}${msg}`;
+                container.appendChild(el);
+                setTimeout(() => {
+                    el.style.opacity = "0";
+                    el.style.transform = "translateX(30px)";
+                    el.style.transition = ".3s";
+                    setTimeout(() => el.remove(), 300);
+                }, 3500);
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // MISC
+            // ═══════════════════════════════════════════════════════════════════
+            function esc(s) {
+                return String(s || "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;");
+            }
+            function toggleSidebar() {
+                document.getElementById("sidebar").classList.toggle("open");
+            }
+
+            // Load saved API URL
+            const savedUrl = localStorage.getItem("mh_api_url");
+            if (savedUrl) CONFIG.API_URL = savedUrl;
+
+            // ═══════════════════════════════════════════════════════════════════
+            // INIT
+            // ═══════════════════════════════════════════════════════════════════
+            if (checkAuth()) bootApp();
+        </script>
+    </body>
+</html>
