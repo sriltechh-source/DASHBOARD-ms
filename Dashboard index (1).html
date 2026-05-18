@@ -1,0 +1,2815 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <title>SubTrack Pro — Subscription Dashboard</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+        <style>
+            :root {
+                --bg: #0a0c10;
+                --surface: #111520;
+                --card: #161b27;
+                --border: #1e2535;
+                --accent: #6c63ff;
+                --accent2: #00e5a0;
+                --accent3: #ff6b6b;
+                --accent4: #ffd166;
+                --text: #e8eaf0;
+                --muted: #8892a4;
+                --radius: 14px;
+                --font-head: "Syne", sans-serif;
+                --font-body: "DM Sans", sans-serif;
+                --nav-h: 64px;
+                --sidebar-w: 240px;
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                -webkit-tap-highlight-color: transparent;
+            }
+            html,
+            body {
+                height: 100%;
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--font-body);
+                overflow: hidden;
+            }
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+            button {
+                cursor: pointer;
+                font-family: var(--font-body);
+            }
+            input,
+            select,
+            textarea {
+                font-family: var(--font-body);
+            }
+
+            /* ===== SCROLLBAR ===== */
+            ::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #2a3045;
+                border-radius: 4px;
+            }
+
+            /* ===== APP SHELL ===== */
+            #app {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                width: 100vw;
+                overflow: hidden;
+            }
+
+            /* ===== TOP NAV ===== */
+            #topnav {
+                height: var(--nav-h);
+                min-height: var(--nav-h);
+                background: rgba(17, 21, 32, 0.95);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                padding: 0 16px;
+                gap: 12px;
+                position: relative;
+                z-index: 100;
+                justify-content: space-between;
+            }
+            .nav-left {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .nav-logo {
+                font-family: var(--font-head);
+                font-weight: 800;
+                font-size: 1.2rem;
+                background: linear-gradient(135deg, var(--accent), var(--accent2));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                white-space: nowrap;
+            }
+            .nav-back-btn {
+                display: none;
+                background: var(--card);
+                border: 1px solid var(--border);
+                color: var(--text);
+                padding: 6px 10px;
+                border-radius: 8px;
+                font-size: 1rem;
+                align-items: center;
+                justify-content: center;
+            }
+            #sync-status {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.75rem;
+                color: var(--muted);
+                background: var(--card);
+                padding: 5px 10px;
+                border-radius: 20px;
+                border: 1px solid var(--border);
+            }
+            .sync-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: var(--accent2);
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.3;
+                }
+            }
+            .nav-right {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .nav-icon-btn {
+                background: var(--card);
+                border: 1px solid var(--border);
+                color: var(--muted);
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            .nav-icon-btn:hover {
+                color: var(--text);
+                border-color: var(--accent);
+            }
+
+            /* ===== LAYOUT ===== */
+            #layout {
+                display: flex;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            /* ===== SIDEBAR ===== */
+            #sidebar {
+                width: var(--sidebar-w);
+                min-width: var(--sidebar-w);
+                background: var(--surface);
+                border-right: 1px solid var(--border);
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+                overflow-x: hidden;
+                transition: transform 0.3s ease;
+                z-index: 90;
+            }
+            .sidebar-section {
+                padding: 10px 10px 4px;
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                color: var(--muted);
+                font-weight: 600;
+            }
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 14px;
+                margin: 2px 8px;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.2s;
+                color: var(--muted);
+                font-size: 0.85rem;
+                font-weight: 500;
+                position: relative;
+            }
+            .nav-item:hover {
+                background: var(--card);
+                color: var(--text);
+            }
+            .nav-item.active {
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(0, 229, 160, 0.1));
+                color: var(--text);
+                border: 1px solid rgba(108, 99, 255, 0.3);
+            }
+            .nav-item .nav-icon {
+                font-size: 1rem;
+                width: 20px;
+                text-align: center;
+            }
+            .nav-badge {
+                margin-left: auto;
+                background: var(--accent);
+                color: #fff;
+                font-size: 0.65rem;
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-weight: 700;
+            }
+
+            /* ===== MAIN CONTENT ===== */
+            #main {
+                flex: 1;
+                overflow: hidden;
+                position: relative;
+            }
+            .page {
+                position: absolute;
+                inset: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: 20px;
+                display: none;
+                opacity: 0;
+                transform: translateX(20px);
+                transition:
+                    opacity 0.3s,
+                    transform 0.3s;
+            }
+            .page.active {
+                display: block;
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            /* ===== HERO BANNER ===== */
+            .page-hero {
+                border-radius: var(--radius);
+                overflow: hidden;
+                position: relative;
+                height: 180px;
+                margin-bottom: 20px;
+                background: linear-gradient(135deg, #1a1040, #0d1f3c);
+            }
+            .page-hero img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.35;
+            }
+            .page-hero-content {
+                position: absolute;
+                inset: 0;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+            }
+            .page-hero h1 {
+                font-family: var(--font-head);
+                font-size: 1.8rem;
+                font-weight: 800;
+                line-height: 1.1;
+            }
+            .page-hero p {
+                color: var(--muted);
+                font-size: 0.85rem;
+                margin-top: 4px;
+            }
+
+            /* ===== STAT CARDS ===== */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 14px;
+                margin-bottom: 20px;
+            }
+            .stat-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 16px;
+                position: relative;
+                overflow: hidden;
+                transition: border-color 0.2s;
+            }
+            .stat-card:hover {
+                border-color: var(--accent);
+            }
+            .stat-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: linear-gradient(90deg, var(--accent), var(--accent2));
+            }
+            .stat-label {
+                font-size: 0.72rem;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 600;
+                margin-bottom: 6px;
+            }
+            .stat-value {
+                font-family: var(--font-head);
+                font-size: 1.8rem;
+                font-weight: 800;
+                line-height: 1;
+            }
+            .stat-sub {
+                font-size: 0.72rem;
+                color: var(--muted);
+                margin-top: 4px;
+            }
+            .stat-icon {
+                position: absolute;
+                right: 12px;
+                top: 12px;
+                font-size: 1.4rem;
+                opacity: 0.15;
+            }
+
+            /* ===== SECTION HEADER ===== */
+            .section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 14px;
+            }
+            .section-title {
+                font-family: var(--font-head);
+                font-size: 1rem;
+                font-weight: 700;
+            }
+            .btn {
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 0.82rem;
+                font-weight: 600;
+                border: none;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .btn-primary {
+                background: var(--accent);
+                color: #fff;
+            }
+            .btn-primary:hover {
+                background: #5a52e0;
+                transform: translateY(-1px);
+            }
+            .btn-success {
+                background: var(--accent2);
+                color: #000;
+            }
+            .btn-success:hover {
+                background: #00cc8c;
+            }
+            .btn-danger {
+                background: var(--accent3);
+                color: #fff;
+            }
+            .btn-danger:hover {
+                background: #e05555;
+            }
+            .btn-ghost {
+                background: var(--card);
+                color: var(--text);
+                border: 1px solid var(--border);
+            }
+            .btn-ghost:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
+            .btn-sm {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            /* ===== TABLE ===== */
+            .table-wrap {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+            }
+            .table-toolbar {
+                padding: 12px 16px;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .search-box {
+                flex: 1;
+                min-width: 160px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 7px 12px;
+                color: var(--text);
+                font-size: 0.82rem;
+                outline: none;
+            }
+            .search-box:focus {
+                border-color: var(--accent);
+            }
+            .filter-select {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 7px 10px;
+                color: var(--text);
+                font-size: 0.82rem;
+                outline: none;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 600px;
+            }
+            thead th {
+                padding: 10px 14px;
+                text-align: left;
+                font-size: 0.72rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: var(--muted);
+                font-weight: 600;
+                border-bottom: 1px solid var(--border);
+                background: rgba(30, 37, 53, 0.5);
+                cursor: pointer;
+                user-select: none;
+                white-space: nowrap;
+            }
+            thead th:hover {
+                color: var(--text);
+            }
+            tbody tr {
+                border-bottom: 1px solid rgba(30, 37, 53, 0.6);
+                transition: background 0.15s;
+            }
+            tbody tr:hover {
+                background: rgba(108, 99, 255, 0.05);
+            }
+            tbody td {
+                padding: 11px 14px;
+                font-size: 0.82rem;
+                white-space: nowrap;
+            }
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 3px 9px;
+                border-radius: 20px;
+                font-size: 0.7rem;
+                font-weight: 700;
+            }
+            .badge-active {
+                background: rgba(0, 229, 160, 0.15);
+                color: var(--accent2);
+                border: 1px solid rgba(0, 229, 160, 0.3);
+            }
+            .badge-inactive {
+                background: rgba(255, 107, 107, 0.1);
+                color: var(--accent3);
+                border: 1px solid rgba(255, 107, 107, 0.2);
+            }
+            .badge-premium {
+                background: rgba(108, 99, 255, 0.15);
+                color: #a89cff;
+                border: 1px solid rgba(108, 99, 255, 0.3);
+            }
+            .badge-diamond {
+                background: rgba(0, 229, 160, 0.1);
+                color: var(--accent2);
+                border: 1px solid rgba(0, 229, 160, 0.25);
+            }
+            .badge-basic {
+                background: rgba(255, 209, 102, 0.1);
+                color: var(--accent4);
+                border: 1px solid rgba(255, 209, 102, 0.2);
+            }
+            .action-btns {
+                display: flex;
+                gap: 5px;
+            }
+
+            /* ===== CHARTS ===== */
+            .charts-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+            .chart-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 18px;
+            }
+            .chart-title {
+                font-family: var(--font-head);
+                font-size: 0.88rem;
+                font-weight: 700;
+                margin-bottom: 14px;
+                color: var(--text);
+            }
+            .chart-canvas-wrap {
+                position: relative;
+                height: 200px;
+            }
+
+            /* ===== MODAL ===== */
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 1000;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(8px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+            }
+            .modal-overlay.open {
+                display: flex;
+            }
+            .modal {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 20px;
+                width: 100%;
+                max-width: 480px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+                animation: slideUp 0.25s ease;
+            }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .modal-header {
+                padding: 20px 24px 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .modal-title {
+                font-family: var(--font-head);
+                font-size: 1.1rem;
+                font-weight: 800;
+            }
+            .modal-close {
+                background: none;
+                border: none;
+                color: var(--muted);
+                font-size: 1.4rem;
+                padding: 4px;
+            }
+            .modal-body {
+                padding: 20px 24px;
+            }
+            .modal-footer {
+                padding: 0 24px 20px;
+                display: flex;
+                gap: 10px;
+                justify-content: flex-end;
+            }
+            .form-group {
+                margin-bottom: 14px;
+            }
+            .form-label {
+                display: block;
+                font-size: 0.78rem;
+                font-weight: 600;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 6px;
+            }
+            .form-input {
+                width: 100%;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 9px 12px;
+                color: var(--text);
+                font-size: 0.85rem;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+            .form-input:focus {
+                border-color: var(--accent);
+            }
+            .form-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            /* ===== PROGRESS BARS ===== */
+            .progress-bar {
+                background: var(--border);
+                border-radius: 4px;
+                height: 6px;
+                overflow: hidden;
+                margin-top: 4px;
+            }
+            .progress-fill {
+                height: 100%;
+                border-radius: 4px;
+                transition: width 0.6s ease;
+                background: linear-gradient(90deg, var(--accent), var(--accent2));
+            }
+
+            /* ===== PROFILE CARDS ===== */
+            .profile-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+            }
+            .profile-card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+                transition: all 0.25s;
+                cursor: pointer;
+            }
+            .profile-card:hover {
+                transform: translateY(-3px);
+                border-color: var(--accent);
+                box-shadow: 0 10px 30px rgba(108, 99, 255, 0.15);
+            }
+            .profile-card-banner {
+                height: 90px;
+                object-fit: cover;
+                width: 100%;
+                opacity: 0.6;
+            }
+            .profile-card-body {
+                padding: 14px;
+                margin-top: -30px;
+            }
+            .profile-avatar {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                border: 3px solid var(--card);
+                background: linear-gradient(135deg, var(--accent), var(--accent2));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: var(--font-head);
+                font-weight: 800;
+                font-size: 1.2rem;
+                color: #fff;
+                margin-bottom: 8px;
+            }
+            .profile-name {
+                font-family: var(--font-head);
+                font-weight: 700;
+                font-size: 1rem;
+            }
+            .profile-plan {
+                font-size: 0.72rem;
+                color: var(--muted);
+                margin-top: 2px;
+            }
+            .profile-stats {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid var(--border);
+            }
+            .p-stat {
+                text-align: center;
+            }
+            .p-stat-val {
+                font-family: var(--font-head);
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+            .p-stat-lbl {
+                font-size: 0.68rem;
+                color: var(--muted);
+            }
+
+            /* ===== FLOWCHART ===== */
+            .flow-wrap {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 20px;
+                overflow-x: auto;
+            }
+            .flow-chart {
+                display: flex;
+                align-items: flex-start;
+                gap: 0;
+                min-width: 600px;
+            }
+            .flow-col {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+            }
+            .flow-node {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 10px 14px;
+                font-size: 0.78rem;
+                font-weight: 600;
+                text-align: center;
+                min-width: 110px;
+                position: relative;
+            }
+            .flow-node.accent {
+                background: rgba(108, 99, 255, 0.15);
+                border-color: var(--accent);
+                color: #a89cff;
+            }
+            .flow-node.success {
+                background: rgba(0, 229, 160, 0.1);
+                border-color: var(--accent2);
+                color: var(--accent2);
+            }
+            .flow-node.warn {
+                background: rgba(255, 209, 102, 0.1);
+                border-color: var(--accent4);
+                color: var(--accent4);
+            }
+            .flow-node.danger {
+                background: rgba(255, 107, 107, 0.1);
+                border-color: var(--accent3);
+                color: var(--accent3);
+            }
+            .flow-arrow {
+                color: var(--muted);
+                font-size: 1.2rem;
+                display: flex;
+                align-items: center;
+                padding: 0 8px;
+            }
+            .flow-arrow-v {
+                color: var(--muted);
+                font-size: 1rem;
+                line-height: 1;
+            }
+
+            /* ===== ACTIVITY FEED ===== */
+            .activity-list {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+            }
+            .activity-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px 0;
+                border-bottom: 1px solid rgba(30, 37, 53, 0.5);
+            }
+            .activity-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                margin-top: 5px;
+                flex-shrink: 0;
+            }
+            .activity-text {
+                font-size: 0.82rem;
+                line-height: 1.4;
+            }
+            .activity-time {
+                font-size: 0.72rem;
+                color: var(--muted);
+                margin-top: 2px;
+            }
+
+            /* ===== SETTINGS ===== */
+            .settings-group {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                margin-bottom: 16px;
+                overflow: hidden;
+            }
+            .settings-group-title {
+                padding: 14px 18px;
+                font-family: var(--font-head);
+                font-weight: 700;
+                font-size: 0.9rem;
+                border-bottom: 1px solid var(--border);
+                background: rgba(30, 37, 53, 0.4);
+            }
+            .settings-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 18px;
+                border-bottom: 1px solid rgba(30, 37, 53, 0.4);
+            }
+            .settings-row:last-child {
+                border-bottom: none;
+            }
+            .settings-label {
+                font-size: 0.85rem;
+                font-weight: 500;
+            }
+            .settings-desc {
+                font-size: 0.75rem;
+                color: var(--muted);
+                margin-top: 2px;
+            }
+            .toggle {
+                position: relative;
+                width: 42px;
+                height: 24px;
+            }
+            .toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .toggle-slider {
+                position: absolute;
+                inset: 0;
+                background: var(--border);
+                border-radius: 24px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+            .toggle-slider::before {
+                content: "";
+                position: absolute;
+                width: 18px;
+                height: 18px;
+                left: 3px;
+                bottom: 3px;
+                background: #fff;
+                border-radius: 50%;
+                transition: 0.3s;
+            }
+            .toggle input:checked + .toggle-slider {
+                background: var(--accent);
+            }
+            .toggle input:checked + .toggle-slider::before {
+                transform: translateX(18px);
+            }
+
+            /* ===== IMAGE HERO SECTIONS ===== */
+            .img-banner {
+                width: 100%;
+                height: 140px;
+                object-fit: cover;
+                border-radius: var(--radius);
+                margin-bottom: 16px;
+                opacity: 0.7;
+            }
+
+            /* ===== TOAST ===== */
+            #toast {
+                position: fixed;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--card);
+                border: 1px solid var(--border);
+                padding: 12px 20px;
+                border-radius: 10px;
+                font-size: 0.83rem;
+                font-weight: 500;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+                z-index: 2000;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s;
+                white-space: nowrap;
+            }
+            #toast.show {
+                opacity: 1;
+            }
+
+            /* ===== EMPTY STATE ===== */
+            .empty-state {
+                text-align: center;
+                padding: 50px 20px;
+                color: var(--muted);
+            }
+            .empty-icon {
+                font-size: 3rem;
+                margin-bottom: 12px;
+                opacity: 0.4;
+            }
+            .empty-text {
+                font-size: 0.9rem;
+            }
+
+            /* ===== MOBILE SIDEBAR OVERLAY ===== */
+            #sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 89;
+            }
+            .hamburger {
+                display: none;
+                background: none;
+                border: none;
+                color: var(--text);
+                font-size: 1.3rem;
+                padding: 4px;
+            }
+
+            /* ===== COLUMN MANAGER ===== */
+            .col-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 20px;
+                padding: 5px 10px;
+                font-size: 0.78rem;
+                margin: 3px;
+            }
+            .col-chip .del {
+                background: none;
+                border: none;
+                color: var(--muted);
+                cursor: pointer;
+                font-size: 0.9rem;
+                line-height: 1;
+                padding: 0;
+            }
+            .col-chip .del:hover {
+                color: var(--accent3);
+            }
+
+            /* ===== RESPONSIVE ===== */
+            @media (max-width: 768px) {
+                :root {
+                    --sidebar-w: 240px;
+                }
+                #sidebar {
+                    position: fixed;
+                    left: 0;
+                    top: var(--nav-h);
+                    bottom: 0;
+                    transform: translateX(-100%);
+                    z-index: 200;
+                }
+                #sidebar.open {
+                    transform: translateX(0);
+                }
+                #sidebar-overlay {
+                    display: none;
+                }
+                #sidebar-overlay.open {
+                    display: block;
+                }
+                .hamburger {
+                    display: flex;
+                }
+                .page {
+                    padding: 14px;
+                }
+                .stats-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                .charts-grid {
+                    grid-template-columns: 1fr;
+                }
+                .form-row {
+                    grid-template-columns: 1fr;
+                }
+                .nav-back-btn {
+                    display: flex;
+                }
+                .page-hero {
+                    height: 140px;
+                }
+                .page-hero h1 {
+                    font-size: 1.3rem;
+                }
+                #sync-status span {
+                    display: none;
+                }
+            }
+            @media (max-width: 480px) {
+                .stats-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                table {
+                    font-size: 0.78rem;
+                }
+                tbody td {
+                    padding: 8px 10px;
+                }
+                thead th {
+                    padding: 8px 10px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <!-- TOP NAV -->
+            <nav id="topnav">
+                <div class="nav-left">
+                    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+                    <button class="nav-back-btn" id="backBtn" onclick="goBack()">‹</button>
+                    <span class="nav-logo">⚡ SubTrack Pro</span>
+                </div>
+                <div id="sync-status">
+                    <span class="sync-dot" id="syncDot"></span>
+                    <span id="syncText">Syncing…</span>
+                </div>
+                <div class="nav-right">
+                    <button class="nav-icon-btn" onclick="refreshData()" title="Refresh">↻</button>
+                    <button class="nav-icon-btn" onclick="navigateTo('settings')" title="Settings">⚙</button>
+                </div>
+            </nav>
+
+            <!-- SIDEBAR OVERLAY -->
+            <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+            <div id="layout">
+                <!-- SIDEBAR -->
+                <nav id="sidebar">
+                    <div style="padding: 12px 8px 0">
+                        <div class="sidebar-section">Main</div>
+                        <div class="nav-item active" data-page="overview" onclick="navigateTo('overview')">
+                            <span class="nav-icon">🏠</span> Overview
+                        </div>
+                        <div class="nav-item" data-page="dashboard1" onclick="navigateTo('dashboard1')">
+                            <span class="nav-icon">📊</span> Live Dashboard
+                        </div>
+                        <div class="nav-item" data-page="dashboard2" onclick="navigateTo('dashboard2')">
+                            <span class="nav-icon">📈</span> Analytics
+                        </div>
+                        <div class="nav-item" data-page="dashboard3" onclick="navigateTo('dashboard3')">
+                            <span class="nav-icon">🗂</span> Plan Insights
+                        </div>
+
+                        <div class="sidebar-section">Subscribers</div>
+                        <div class="nav-item" data-page="subscribers" onclick="navigateTo('subscribers')">
+                            <span class="nav-icon">👥</span> All Subscribers
+                            <span class="nav-badge" id="sb-badge">0</span>
+                        </div>
+                        <div class="nav-item" data-page="profiles" onclick="navigateTo('profiles')">
+                            <span class="nav-icon">🧑‍💼</span> Profiles
+                        </div>
+                        <div class="nav-item" data-page="activity" onclick="navigateTo('activity')">
+                            <span class="nav-icon">⚡</span> Activity
+                        </div>
+
+                        <div class="sidebar-section">Tools</div>
+                        <div class="nav-item" data-page="columns" onclick="navigateTo('columns')">
+                            <span class="nav-icon">🔧</span> Column Manager
+                        </div>
+                        <div class="nav-item" data-page="settings" onclick="navigateTo('settings')">
+                            <span class="nav-icon">⚙️</span> Settings
+                        </div>
+                    </div>
+                    <!-- Sidebar footer image -->
+                    <div style="margin: auto 0 0; padding: 12px">
+                        <img
+                            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=240&h=100&fit=crop"
+                            style="width: 100%; border-radius: 10px; opacity: 0.5; object-fit: cover"
+                            alt=""
+                        />
+                        <p style="font-size: 0.68rem; color: var(--muted); text-align: center; margin-top: 6px">
+                            Real-time Sync Active
+                        </p>
+                    </div>
+                </nav>
+
+                <!-- MAIN CONTENT -->
+                <main id="main">
+                    <!-- ============================================================ -->
+                    <!-- PAGE 1: OVERVIEW -->
+                    <!-- ============================================================ -->
+                    <div class="page active" id="page-overview">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Dashboard Overview</h1>
+                                <p id="overview-subtitle">Loading subscriber data…</p>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid" id="overview-stats"></div>
+
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <div class="chart-title">📊 Plan Distribution</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-plans"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-title">📈 Used vs Remaining</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-usage"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-title">✅ Status Breakdown</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-status"></canvas></div>
+                            </div>
+                        </div>
+
+                        <img
+                            src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=900&h=140&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+
+                        <div class="section-header">
+                            <span class="section-title">🕒 Recent Activity</span>
+                            <button class="btn btn-ghost btn-sm" onclick="navigateTo('activity')">View All</button>
+                        </div>
+                        <div class="activity-list" id="recent-activity"></div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 2: LIVE DASHBOARD -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-dashboard1">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Live Dashboard</h1>
+                                <p>Real-time subscription metrics — auto-refreshes every 15s</p>
+                            </div>
+                        </div>
+                        <div class="stats-grid" id="live-stats"></div>
+                        <div class="charts-grid">
+                            <div class="chart-card" style="grid-column: span 2">
+                                <div class="chart-title">📉 Usage Bar per Subscriber</div>
+                                <div class="chart-canvas-wrap" style="height: 250px">
+                                    <canvas id="chart-bar-usage"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-title">💎 Top Plans Revenue Share</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-revenue"></canvas></div>
+                            </div>
+                        </div>
+                        <img
+                            src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=900&h=140&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+                        <div class="section-header">
+                            <span class="section-title">⚡ Live Subscribers Table</span>
+                            <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Add</button>
+                        </div>
+                        <div class="table-wrap">
+                            <div class="table-toolbar">
+                                <input
+                                    class="search-box"
+                                    id="live-search"
+                                    placeholder="🔍 Search subscribers…"
+                                    oninput="renderLiveTable()"
+                                />
+                                <select class="filter-select" id="live-plan-filter" onchange="renderLiveTable()">
+                                    <option value="">All Plans</option>
+                                </select>
+                                <select class="filter-select" id="live-status-filter" onchange="renderLiveTable()">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div style="overflow-x: auto">
+                                <table id="live-table">
+                                    <thead id="live-thead"></thead>
+                                    <tbody id="live-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 3: ANALYTICS -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-dashboard2">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Analytics Center</h1>
+                                <p>Deep insights into your subscription data</p>
+                            </div>
+                        </div>
+                        <img
+                            src="https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=900&h=120&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+                        <div class="charts-grid" id="analytics-charts">
+                            <div class="chart-card">
+                                <div class="chart-title">🔄 Delivery Rate</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-delivery"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-title">📅 Join Timeline</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-timeline"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-title">🏆 Top Consumers</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-top-consumers"></canvas></div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-title">📊 Plan Comparison</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-plan-compare"></canvas></div>
+                            </div>
+                        </div>
+                        <!-- Flowchart -->
+                        <div class="section-header">
+                            <span class="section-title">🔀 Subscription Lifecycle Flow</span>
+                        </div>
+                        <div class="flow-wrap" style="margin-bottom: 20px">
+                            <div class="flow-chart" id="flow-chart">
+                                <div class="flow-col">
+                                    <div class="flow-node accent">🆕 New Lead</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node">📝 Registered</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node success">✅ Active</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node warn">⚠ Low Credits</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node danger">❌ Expired</div>
+                                </div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-col">
+                                    <div class="flow-node">🔰 Basic Plan</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node accent">💎 Premium</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node success">🌟 Diamond</div>
+                                </div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-col">
+                                    <div class="flow-node warn">📦 Credits Used</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node success">📬 Delivered</div>
+                                    <div class="flow-arrow-v">↓</div>
+                                    <div class="flow-node accent">🔄 Renew</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 4: PLAN INSIGHTS -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-dashboard3">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Plan Insights</h1>
+                                <p>Breakdown by subscription plan with live usage tracking</p>
+                            </div>
+                        </div>
+                        <div id="plan-insights-grid" class="stats-grid"></div>
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <div class="chart-title">📊 Used vs Remaining by Plan</div>
+                                <div class="chart-canvas-wrap" style="height: 240px">
+                                    <canvas id="chart-plan-used-rem"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-title">🍕 Plan Share</div>
+                                <div class="chart-canvas-wrap"><canvas id="chart-plan-donut"></canvas></div>
+                            </div>
+                        </div>
+                        <img
+                            src="https://images.unsplash.com/photo-1568992688065-536aad8a12f6?w=900&h=120&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+                        <div class="section-header">
+                            <span class="section-title">📋 Per-Plan Subscriber List</span>
+                            <select class="filter-select" id="plan-filter-d3" onchange="renderPlanTable()">
+                                <option value="">All Plans</option>
+                            </select>
+                        </div>
+                        <div class="table-wrap">
+                            <div style="overflow-x: auto">
+                                <table>
+                                    <thead id="plan-thead"></thead>
+                                    <tbody id="plan-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 5: ALL SUBSCRIBERS -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-subscribers">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>All Subscribers</h1>
+                                <p id="sub-count-text">Loading…</p>
+                            </div>
+                        </div>
+                        <div class="section-header">
+                            <span class="section-title">👥 Subscriber Records</span>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                                <button class="btn btn-primary btn-sm" onclick="openAddModal()">
+                                    + Add Subscriber
+                                </button>
+                                <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <div class="table-toolbar">
+                                <input
+                                    class="search-box"
+                                    id="all-search"
+                                    placeholder="🔍 Search name, phone, plan…"
+                                    oninput="renderAllTable()"
+                                />
+                                <select class="filter-select" id="all-plan-filter" onchange="renderAllTable()">
+                                    <option value="">All Plans</option>
+                                </select>
+                                <select class="filter-select" id="all-status-filter" onchange="renderAllTable()">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div style="overflow-x: auto">
+                                <table id="all-table">
+                                    <thead id="all-thead"></thead>
+                                    <tbody id="all-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 6: PROFILES -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-profiles">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Subscriber Profiles</h1>
+                                <p>Visual overview of each subscriber's profile & usage</p>
+                            </div>
+                        </div>
+                        <div class="profile-grid" id="profile-grid"></div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 7: ACTIVITY -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-activity">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1495576775051-8af0d10f19b1?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Activity Log</h1>
+                                <p>All changes, edits, and sync events in real-time</p>
+                            </div>
+                        </div>
+                        <img
+                            src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=900&h=120&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+                        <div class="section-header">
+                            <span class="section-title">⚡ Recent Events</span>
+                            <button class="btn btn-ghost btn-sm" onclick="activityLog=[];renderActivity()">
+                                🗑 Clear
+                            </button>
+                        </div>
+                        <div class="activity-list" id="full-activity"></div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 8: COLUMN MANAGER -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-columns">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Column Manager</h1>
+                                <p>Add, rename, or remove columns — syncs to Google Sheets instantly</p>
+                            </div>
+                        </div>
+                        <img
+                            src="https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=900&h=120&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+                        <div class="settings-group">
+                            <div class="settings-group-title">📋 Current Columns</div>
+                            <div style="padding: 16px">
+                                <div
+                                    id="current-cols-display"
+                                    style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <div class="settings-group-title">➕ Add New Column</div>
+                            <div style="padding: 16px; display: flex; gap: 10px; flex-wrap: wrap">
+                                <input
+                                    class="form-input"
+                                    id="new-col-name"
+                                    placeholder="Column name (e.g. email)"
+                                    style="max-width: 200px"
+                                />
+                                <select class="filter-select" id="new-col-type">
+                                    <option value="text">Text</option>
+                                    <option value="number">Number</option>
+                                    <option value="date">Date</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="addColumn()">Add Column</button>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <div class="settings-group-title">🔄 Sync Status</div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">Last synced</div>
+                                    <div class="settings-desc" id="last-sync-time">Never</div>
+                                </div>
+                            </div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">Total columns</div>
+                                    <div class="settings-desc" id="total-cols-count">—</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================================ -->
+                    <!-- PAGE 9: SETTINGS -->
+                    <!-- ============================================================ -->
+                    <div class="page" id="page-settings">
+                        <div class="page-hero">
+                            <img
+                                src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&h=200&fit=crop"
+                                alt=""
+                            />
+                            <div class="page-hero-content">
+                                <h1>Settings</h1>
+                                <p>Configure your dashboard and sync preferences</p>
+                            </div>
+                        </div>
+                        <img
+                            src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=900&h=120&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+
+                        <div class="settings-group">
+                            <div class="settings-group-title">🔗 Google Sheets Connection</div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">Apps Script URL</div>
+                                    <div class="settings-desc">Connected & Active</div>
+                                </div>
+                                <span class="badge badge-active">✓ Live</span>
+                            </div>
+                            <div class="settings-row">
+                                <div><div class="settings-label">Auto Refresh Interval</div></div>
+                                <select class="filter-select" id="refresh-interval" onchange="setRefreshInterval()">
+                                    <option value="10000">10s</option>
+                                    <option value="15000" selected>15s</option>
+                                    <option value="30000">30s</option>
+                                    <option value="60000">1 min</option>
+                                </select>
+                            </div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">Real-time sync</div>
+                                    <div class="settings-desc">Push changes instantly to sheets</div>
+                                </div>
+                                <label class="toggle"
+                                    ><input type="checkbox" checked id="toggle-sync" /><span
+                                        class="toggle-slider"
+                                    ></span
+                                ></label>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="settings-group-title">🎨 Display</div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">Show profile photos</div>
+                                    <div class="settings-desc">Unsplash backgrounds on profile cards</div>
+                                </div>
+                                <label class="toggle"
+                                    ><input type="checkbox" checked id="toggle-photos" /><span
+                                        class="toggle-slider"
+                                    ></span
+                                ></label>
+                            </div>
+                            <div class="settings-row">
+                                <div><div class="settings-label">Compact table view</div></div>
+                                <label class="toggle"
+                                    ><input type="checkbox" id="toggle-compact" onchange="toggleCompact()" /><span
+                                        class="toggle-slider"
+                                    ></span
+                                ></label>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="settings-group-title">🗂 Data Management</div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">Export all data</div>
+                                    <div class="settings-desc">Download as CSV</div>
+                                </div>
+                                <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export</button>
+                            </div>
+                            <div class="settings-row">
+                                <div>
+                                    <div class="settings-label">Force full sync</div>
+                                    <div class="settings-desc">Reload everything from sheets</div>
+                                </div>
+                                <button class="btn btn-primary btn-sm" onclick="refreshData()">↻ Sync Now</button>
+                            </div>
+                        </div>
+                        <img
+                            src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&h=140&fit=crop"
+                            class="img-banner"
+                            alt=""
+                        />
+                    </div>
+                </main>
+                <!-- end #main -->
+            </div>
+            <!-- end #layout -->
+        </div>
+        <!-- end #app -->
+
+        <!-- TOAST -->
+        <div id="toast"></div>
+
+        <!-- ADD/EDIT MODAL -->
+        <div class="modal-overlay" id="addModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <span class="modal-title" id="modal-title">Add Subscriber</span>
+                    <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <!-- Dynamically generated -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
+                    <button class="btn btn-primary" id="modal-save-btn" onclick="saveRecord()">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DELETE CONFIRM MODAL -->
+        <div class="modal-overlay" id="delModal">
+            <div class="modal" style="max-width: 340px">
+                <div class="modal-header">
+                    <span class="modal-title">Delete Subscriber?</span>
+                    <button class="modal-close" onclick="closeModal('delModal')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size: 0.85rem; color: var(--muted)">
+                        This will permanently delete the record from Google Sheets. This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-ghost" onclick="closeModal('delModal')">Cancel</button>
+                    <button class="btn btn-danger" id="confirm-del-btn">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PART 2 CONTINUES BELOW: JavaScript Engine -->
+        <script>
+            // ============================================================
+            // PART 2: CORE JAVASCRIPT ENGINE
+            // ============================================================
+
+            // ---- CONFIG ----
+            const SCRIPT_URL =
+                "https://script.google.com/macros/s/AKfycbxFFDL6ltzyy75hK9MDEBQXjS_piAX3quiEGjf2LI3nTi9XTfr6m3K1baNVJ9nC7AKd/exec";
+            let refreshInterval = 15000;
+            let refreshTimer = null;
+
+            // ---- STATE ----
+            let allData = []; // array of row objects
+            let headers = []; // column headers from sheet
+            let activityLog = [];
+            let navHistory = ["overview"];
+            let currentPage = "overview";
+            let editingRowIndex = null; // 1-based row in sheet (row 2 = index 0)
+            let charts = {};
+            let lastSyncTime = null;
+
+            // ---- UNSPLASH IMAGES for profiles ----
+            const profileBanners = [
+                "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1484981184820-2e84ea0af397?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1530099486328-e021101a494a?w=400&h=90&fit=crop",
+                "https://images.unsplash.com/photo-1528901166007-3784c7dd3374?w=400&h=90&fit=crop",
+            ];
+
+            // ============================================================
+            // NAVIGATION with Android back-button support
+            // ============================================================
+            function navigateTo(page, addHistory = true) {
+                if (currentPage === page) return;
+                if (addHistory) navHistory.push(page);
+
+                document.querySelectorAll(".page").forEach((p) => p.classList.remove("active"));
+                document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
+
+                const el = document.getElementById("page-" + page);
+                if (el) {
+                    el.classList.add("active");
+                    el.style.opacity = 0;
+                    el.style.transform = "translateX(20px)";
+                    setTimeout(() => {
+                        el.style.opacity = 1;
+                        el.style.transform = "translateX(0)";
+                    }, 10);
+                }
+                const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
+                if (navEl) navEl.classList.add("active");
+
+                currentPage = page;
+                document.getElementById("backBtn").style.display = navHistory.length > 1 ? "flex" : "none";
+
+                // close sidebar on mobile
+                if (window.innerWidth < 768) closeSidebar();
+
+                // refresh page-specific data
+                refreshPageData(page);
+            }
+
+            function goBack() {
+                if (navHistory.length <= 1) return;
+                navHistory.pop();
+                const prev = navHistory[navHistory.length - 1];
+                navigateTo(prev, false);
+            }
+
+            // Android back button support
+            window.addEventListener("popstate", () => {
+                if (navHistory.length > 1) goBack();
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") goBack();
+            });
+
+            function toggleSidebar() {
+                const sb = document.getElementById("sidebar");
+                const ov = document.getElementById("sidebar-overlay");
+                sb.classList.toggle("open");
+                ov.classList.toggle("open");
+            }
+            function closeSidebar() {
+                document.getElementById("sidebar").classList.remove("open");
+                document.getElementById("sidebar-overlay").classList.remove("open");
+            }
+
+            // ============================================================
+            // DATA FETCHING — Google Apps Script (JSONP + POST)
+            // JSONP is used for GET (getData) — 100% CORS-free from GitHub Pages
+            // POST uses fetch with redirect:follow which works after Apps Script redirect
+            // ============================================================
+
+            // JSONP GET — works perfectly from any domain including GitHub Pages
+            function jsonpFetch(url) {
+                return new Promise((resolve, reject) => {
+                    const cbName = "cb_" + Date.now() + "_" + Math.floor(Math.random() * 9999);
+                    const script = document.createElement("script");
+                    const timeout = setTimeout(() => {
+                        cleanup();
+                        reject(new Error("JSONP timeout"));
+                    }, 12000);
+
+                    window[cbName] = function (data) {
+                        cleanup();
+                        resolve(data);
+                    };
+
+                    function cleanup() {
+                        clearTimeout(timeout);
+                        delete window[cbName];
+                        if (script.parentNode) script.parentNode.removeChild(script);
+                    }
+
+                    script.onerror = () => {
+                        cleanup();
+                        reject(new Error("JSONP script error"));
+                    };
+                    script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + cbName + "&t=" + Date.now();
+                    document.head.appendChild(script);
+                });
+            }
+
+            // POST via fetch — Apps Script redirects to a CORS-friendly URL automatically
+            // We use a form-urlencoded body which Apps Script doPost handles reliably
+            async function postFetch(payload) {
+                // Encode payload as URL params so Apps Script reads via e.parameter
+                const params = new URLSearchParams();
+                params.set("payload", JSON.stringify(payload));
+                params.set("action", payload.action);
+
+                const res = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    redirect: "follow",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: params.toString(),
+                });
+                return res.json();
+            }
+
+            async function fetchData() {
+                setSyncStatus("syncing");
+                try {
+                    // Try JSONP first (fastest, no CORS issues)
+                    let json;
+                    try {
+                        json = await jsonpFetch(SCRIPT_URL + "?action=getData");
+                    } catch (jsonpErr) {
+                        console.warn("JSONP failed, trying fetch:", jsonpErr);
+                        const res = await fetch(SCRIPT_URL + "?action=getData&t=" + Date.now(), { redirect: "follow" });
+                        json = await res.json();
+                    }
+
+                    if (json && json.headers && json.rows) {
+                        headers = json.headers;
+                        allData = json.rows.map((r, i) => {
+                            const obj = { _rowIndex: i + 2 };
+                            headers.forEach((h, j) => {
+                                obj[h] = r[j] ?? "";
+                            });
+                            return obj;
+                        });
+                        lastSyncTime = new Date();
+                        const lsEl = document.getElementById("last-sync-time");
+                        const tcEl = document.getElementById("total-cols-count");
+                        if (lsEl) lsEl.textContent = lastSyncTime.toLocaleTimeString();
+                        if (tcEl) tcEl.textContent = headers.length + " columns";
+                        setSyncStatus("ok");
+                        renderEverything();
+                    } else {
+                        setSyncStatus("error");
+                        showToast("⚠ Unexpected response — check Apps Script deployment");
+                        console.warn("Bad response:", json);
+                    }
+                } catch (e) {
+                    setSyncStatus("error");
+                    showToast("❌ Cannot reach Google Sheets — check URL & permissions");
+                    console.error("fetchData error:", e);
+                }
+            }
+
+            async function sendData(action, payload) {
+                setSyncStatus("syncing");
+                // For write operations, use JSONP GET with all params encoded
+                // (Apps Script doGet handles all actions when deployed as "Anyone" web app)
+                return new Promise(async (resolve) => {
+                    try {
+                        // Build GET URL with all params (most reliable write method for Apps Script)
+                        const params = new URLSearchParams({ action });
+                        // flatten payload into params
+                        Object.entries(payload).forEach(([k, v]) => {
+                            params.set(k, typeof v === "object" ? JSON.stringify(v) : v);
+                        });
+                        const url = SCRIPT_URL + "?" + params.toString();
+
+                        let json;
+                        try {
+                            json = await jsonpFetch(url);
+                        } catch (e) {
+                            // fallback: POST
+                            json = await postFetch({ action, ...payload });
+                        }
+
+                        if (json && json.success) {
+                            setSyncStatus("ok");
+                            addActivity(`✅ ${action}`, "#6c63ff");
+                            await fetchData();
+                            resolve(true);
+                        } else {
+                            setSyncStatus("error");
+                            showToast("❌ " + (json?.error || "Operation failed"));
+                            console.warn("sendData response:", json);
+                            resolve(false);
+                        }
+                    } catch (e) {
+                        setSyncStatus("error");
+                        showToast("❌ Network error — " + e.message);
+                        console.error("sendData error:", e);
+                        resolve(false);
+                    }
+                });
+            }
+
+            function setSyncStatus(state) {
+                const dot = document.getElementById("syncDot");
+                const txt = document.getElementById("syncText");
+                if (state === "ok") {
+                    dot.style.background = "var(--accent2)";
+                    txt.textContent = "Synced";
+                } else if (state === "syncing") {
+                    dot.style.background = "var(--accent4)";
+                    txt.textContent = "Syncing…";
+                } else {
+                    dot.style.background = "var(--accent3)";
+                    txt.textContent = "Error";
+                }
+            }
+
+            function refreshData() {
+                showToast("🔄 Refreshing from Google Sheets…");
+                fetchData();
+            }
+
+            function setRefreshInterval() {
+                clearInterval(refreshTimer);
+                refreshInterval = parseInt(document.getElementById("refresh-interval").value);
+                refreshTimer = setInterval(fetchData, refreshInterval);
+            }
+
+            // ============================================================
+            // RENDER EVERYTHING
+            // ============================================================
+            function renderEverything() {
+                updateBadges();
+                updateFilters();
+                renderOverviewStats();
+                renderOverviewCharts();
+                renderRecentActivity();
+                renderLiveStats();
+                renderLiveTable();
+                renderLiveCharts();
+                renderAnalyticsCharts();
+                renderPlanInsights();
+                renderPlanTable();
+                renderAllTable();
+                renderProfiles();
+                renderColumnManager();
+            }
+
+            function refreshPageData(page) {
+                switch (page) {
+                    case "overview":
+                        renderOverviewStats();
+                        renderOverviewCharts();
+                        break;
+                    case "dashboard1":
+                        renderLiveStats();
+                        renderLiveTable();
+                        renderLiveCharts();
+                        break;
+                    case "dashboard2":
+                        renderAnalyticsCharts();
+                        break;
+                    case "dashboard3":
+                        renderPlanInsights();
+                        renderPlanTable();
+                        break;
+                    case "subscribers":
+                        renderAllTable();
+                        break;
+                    case "profiles":
+                        renderProfiles();
+                        break;
+                    case "activity":
+                        renderActivity();
+                        break;
+                    case "columns":
+                        renderColumnManager();
+                        break;
+                }
+            }
+
+            // ============================================================
+            // OVERVIEW STATS
+            // ============================================================
+            function renderOverviewStats() {
+                const total = allData.length;
+                const active = allData.filter((r) => (r.status || "").toLowerCase() === "active").length;
+                const usedKey = headers.find((h) => h.toLowerCase().includes("used")) || "used";
+                const remKey =
+                    headers.find((h) => h.toLowerCase().includes("remaining") || h.toLowerCase() === "remaining") ||
+                    "remaining";
+                const totalUsed = allData.reduce((s, r) => s + (parseFloat(r[usedKey]) || 0), 0);
+                const totalRem = allData.reduce((s, r) => s + (parseFloat(r[remKey]) || 0), 0);
+
+                document.getElementById("overview-subtitle").textContent =
+                    `${total} subscribers · ${active} active · Last sync ${lastSyncTime ? lastSyncTime.toLocaleTimeString() : "—"}`;
+
+                document.getElementById("sb-badge").textContent = total;
+                document.getElementById("sub-count-text").textContent = `${total} total subscribers, ${active} active`;
+
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+                const plans = [...new Set(allData.map((r) => r[planKey]).filter(Boolean))];
+
+                document.getElementById("overview-stats").innerHTML = `
+    <div class="stat-card"><span class="stat-icon">👥</span>
+      <div class="stat-label">Total</div><div class="stat-value">${total}</div>
+      <div class="stat-sub">Subscribers</div></div>
+    <div class="stat-card"><span class="stat-icon">✅</span>
+      <div class="stat-label">Active</div><div class="stat-value" style="color:var(--accent2)">${active}</div>
+      <div class="stat-sub">${total ? Math.round((active / total) * 100) : 0}% active rate</div></div>
+    <div class="stat-card"><span class="stat-icon">📦</span>
+      <div class="stat-label">Delivered</div><div class="stat-value" style="color:var(--accent)">${totalUsed}</div>
+      <div class="stat-sub">Credits used</div></div>
+    <div class="stat-card"><span class="stat-icon">🔋</span>
+      <div class="stat-label">Remaining</div><div class="stat-value" style="color:var(--accent4)">${totalRem}</div>
+      <div class="stat-sub">Credits left</div></div>
+    <div class="stat-card"><span class="stat-icon">💎</span>
+      <div class="stat-label">Plans</div><div class="stat-value">${plans.length}</div>
+      <div class="stat-sub">Active plan types</div></div>
+    <div class="stat-card"><span class="stat-icon">📅</span>
+      <div class="stat-label">Inactive</div><div class="stat-value" style="color:var(--accent3)">${total - active}</div>
+      <div class="stat-sub">Need attention</div></div>
+  `;
+                document.getElementById("live-stats").innerHTML = document.getElementById("overview-stats").innerHTML;
+            }
+
+            // ============================================================
+            // UPDATE FILTERS
+            // ============================================================
+            function updateFilters() {
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+                const plans = [...new Set(allData.map((r) => r[planKey]).filter(Boolean))];
+                const planOption = (v) => `<option value="${v}">${v}</option>`;
+                ["live-plan-filter", "all-plan-filter", "plan-filter-d3"].forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const cur = el.value;
+                    el.innerHTML = '<option value="">All Plans</option>' + plans.map(planOption).join("");
+                    el.value = plans.includes(cur) ? cur : "";
+                });
+            }
+
+            function updateBadges() {
+                document.getElementById("sb-badge").textContent = allData.length;
+            }
+
+            // ============================================================
+            // CHARTS HELPER
+            // ============================================================
+            const CHART_COLORS = [
+                "#6c63ff",
+                "#00e5a0",
+                "#ff6b6b",
+                "#ffd166",
+                "#06d6a0",
+                "#ef476f",
+                "#118ab2",
+                "#073b4c",
+            ];
+            function destroyChart(id) {
+                if (charts[id]) {
+                    charts[id].destroy();
+                    delete charts[id];
+                }
+            }
+
+            function makeChart(id, config) {
+                destroyChart(id);
+                const ctx = document.getElementById(id);
+                if (!ctx) return;
+                charts[id] = new Chart(ctx, {
+                    ...config,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: "#8892a4", font: { family: "DM Sans" }, boxWidth: 12 } },
+                        },
+                        scales:
+                            config.type === "bar" || config.type === "line"
+                                ? {
+                                      x: {
+                                          ticks: { color: "#8892a4", font: { family: "DM Sans", size: 10 } },
+                                          grid: { color: "#1e2535" },
+                                      },
+                                      y: {
+                                          ticks: { color: "#8892a4", font: { family: "DM Sans", size: 10 } },
+                                          grid: { color: "#1e2535" },
+                                      },
+                                  }
+                                : undefined,
+                        ...(config.options || {}),
+                    },
+                });
+            }
+
+            // ============================================================
+            // OVERVIEW CHARTS
+            // ============================================================
+            function renderOverviewCharts() {
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+                const usedKey = headers.find((h) => h.toLowerCase().includes("used")) || "used";
+                const remKey = headers.find((h) => h.toLowerCase().includes("remaining")) || "remaining";
+
+                // Plan distribution
+                const planCounts = {};
+                allData.forEach((r) => {
+                    const p = r[planKey] || "Unknown";
+                    planCounts[p] = (planCounts[p] || 0) + 1;
+                });
+                makeChart("chart-plans", {
+                    type: "doughnut",
+                    data: {
+                        labels: Object.keys(planCounts),
+                        datasets: [{ data: Object.values(planCounts), backgroundColor: CHART_COLORS, borderWidth: 0 }],
+                    },
+                });
+
+                // Used vs Remaining
+                const totalUsed = allData.reduce((s, r) => s + (parseFloat(r[usedKey]) || 0), 0);
+                const totalRem = allData.reduce((s, r) => s + (parseFloat(r[remKey]) || 0), 0);
+                makeChart("chart-usage", {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Used", "Remaining"],
+                        datasets: [
+                            { data: [totalUsed, totalRem], backgroundColor: ["#ff6b6b", "#00e5a0"], borderWidth: 0 },
+                        ],
+                    },
+                });
+
+                // Status
+                const active = allData.filter((r) => (r.status || "").toLowerCase() === "active").length;
+                makeChart("chart-status", {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Active", "Inactive"],
+                        datasets: [
+                            {
+                                data: [active, allData.length - active],
+                                backgroundColor: ["#00e5a0", "#ff6b6b"],
+                                borderWidth: 0,
+                            },
+                        ],
+                    },
+                });
+            }
+
+            // ============================================================
+            // LIVE DASHBOARD TABLE
+            // ============================================================
+            function renderLiveTable() {
+                if (!headers.length) return;
+                const search = (document.getElementById("live-search")?.value || "").toLowerCase();
+                const planFilter = document.getElementById("live-plan-filter")?.value || "";
+                const statusFilter = document.getElementById("live-status-filter")?.value || "";
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+
+                let rows = allData.filter((r) => {
+                    const match = !search || Object.values(r).some((v) => String(v).toLowerCase().includes(search));
+                    const planMatch = !planFilter || (r[planKey] || "").toLowerCase() === planFilter.toLowerCase();
+                    const statusMatch = !statusFilter || (r.status || "").toLowerCase() === statusFilter.toLowerCase();
+                    return match && planMatch && statusMatch;
+                });
+
+                buildTable("live-thead", "live-tbody", rows, true);
+            }
+
+            function renderAllTable() {
+                if (!headers.length) return;
+                const search = (document.getElementById("all-search")?.value || "").toLowerCase();
+                const planFilter = document.getElementById("all-plan-filter")?.value || "";
+                const statusFilter = document.getElementById("all-status-filter")?.value || "";
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+
+                let rows = allData.filter((r) => {
+                    const match = !search || Object.values(r).some((v) => String(v).toLowerCase().includes(search));
+                    const planMatch = !planFilter || (r[planKey] || "").toLowerCase() === planFilter.toLowerCase();
+                    const statusMatch = !statusFilter || (r.status || "").toLowerCase() === statusFilter.toLowerCase();
+                    return match && planMatch && statusMatch;
+                });
+
+                buildTable("all-thead", "all-tbody", rows, true);
+            }
+
+            function buildTable(theadId, tbodyId, rows, showActions) {
+                const thead = document.getElementById(theadId);
+                const tbody = document.getElementById(tbodyId);
+                if (!thead || !tbody) return;
+
+                thead.innerHTML =
+                    "<tr>" +
+                    headers.map((h) => `<th>${h.toUpperCase()}</th>`).join("") +
+                    (showActions ? "<th>ACTIONS</th>" : "") +
+                    "</tr>";
+
+                if (!rows.length) {
+                    tbody.innerHTML = `<tr><td colspan="${headers.length + (showActions ? 1 : 0)}" style="text-align:center;padding:30px;color:var(--muted)">No records found</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = rows
+                    .map((r) => {
+                        const cells = headers
+                            .map((h) => {
+                                let v = r[h] ?? "";
+                                if (h.toLowerCase() === "status") {
+                                    const cls =
+                                        String(v).toLowerCase() === "active" ? "badge-active" : "badge-inactive";
+                                    return `<td><span class="badge ${cls}">${v}</span></td>`;
+                                }
+                                if (h.toLowerCase() === "plan") {
+                                    const cls =
+                                        String(v).toLowerCase() === "premium"
+                                            ? "badge-premium"
+                                            : String(v).toLowerCase() === "diamond"
+                                              ? "badge-diamond"
+                                              : "badge-basic";
+                                    return `<td><span class="badge ${cls}">${v}</span></td>`;
+                                }
+                                if (h.toLowerCase() === "remaining" || h.toLowerCase() === "used") {
+                                    const usedKey = headers.find((x) => x.toLowerCase().includes("used")) || "used";
+                                    const remKey =
+                                        headers.find((x) => x.toLowerCase().includes("remaining")) || "remaining";
+                                    const used = parseFloat(r[usedKey]) || 0;
+                                    const rem = parseFloat(r[remKey]) || 0;
+                                    const total = used + rem;
+                                    const pct = total
+                                        ? Math.round(((h.toLowerCase().includes("used") ? used : rem) / total) * 100)
+                                        : 0;
+                                    return `<td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span>${v}</span>
+            <div class="progress-bar" style="width:60px">
+              <div class="progress-fill" style="width:${pct}%;background:${h.toLowerCase().includes("remaining") ? "var(--accent2)" : "var(--accent3)"}"></div>
+            </div>
+          </div></td>`;
+                                }
+                                return `<td>${v}</td>`;
+                            })
+                            .join("");
+
+                        const actions = showActions
+                            ? `<td><div class="action-btns">
+      <button class="btn btn-ghost btn-sm" onclick='openEditModal(${JSON.stringify(r)})'>✏ Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${r._rowIndex})">🗑</button>
+    </div></td>`
+                            : "";
+
+                        return `<tr>${cells}${actions}</tr>`;
+                    })
+                    .join("");
+            }
+
+            // ============================================================
+            // LIVE DASHBOARD CHARTS
+            // ============================================================
+            function renderLiveCharts() {
+                const nameKey = headers.find((h) => h.toLowerCase() === "name") || "name";
+                const usedKey = headers.find((h) => h.toLowerCase().includes("used")) || "used";
+                const remKey = headers.find((h) => h.toLowerCase().includes("remaining")) || "remaining";
+
+                const labels = allData.slice(0, 15).map((r) => r[nameKey] || "?");
+                const usedVals = allData.slice(0, 15).map((r) => parseFloat(r[usedKey]) || 0);
+                const remVals = allData.slice(0, 15).map((r) => parseFloat(r[remKey]) || 0);
+
+                makeChart("chart-bar-usage", {
+                    type: "bar",
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: "Used", data: usedVals, backgroundColor: "#ff6b6b", borderRadius: 4 },
+                            { label: "Remaining", data: remVals, backgroundColor: "#00e5a0", borderRadius: 4 },
+                        ],
+                    },
+                    options: { scales: { x: { stacked: true }, y: { stacked: true } } },
+                });
+
+                // Revenue-share doughnut by plan
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+                const planUsed = {};
+                allData.forEach((r) => {
+                    const p = r[planKey] || "Unknown";
+                    planUsed[p] = (planUsed[p] || 0) + (parseFloat(r[usedKey]) || 0);
+                });
+                makeChart("chart-revenue", {
+                    type: "pie",
+                    data: {
+                        labels: Object.keys(planUsed),
+                        datasets: [{ data: Object.values(planUsed), backgroundColor: CHART_COLORS, borderWidth: 0 }],
+                    },
+                });
+            }
+
+            // ============================================================
+            // ANALYTICS CHARTS
+            // ============================================================
+            function renderAnalyticsCharts() {
+                const usedKey = headers.find((h) => h.toLowerCase().includes("used")) || "used";
+                const remKey = headers.find((h) => h.toLowerCase().includes("remaining")) || "remaining";
+                const nameKey = headers.find((h) => h.toLowerCase() === "name") || "name";
+                const dateKey = headers.find((h) => h.toLowerCase().includes("date")) || "joined_date";
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+
+                // Delivery rate
+                const totalUsed = allData.reduce((s, r) => s + (parseFloat(r[usedKey]) || 0), 0);
+                const totalRem = allData.reduce((s, r) => s + (parseFloat(r[remKey]) || 0), 0);
+                makeChart("chart-delivery", {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Delivered", "Pending"],
+                        datasets: [
+                            { data: [totalUsed, totalRem], backgroundColor: ["#6c63ff", "#1e2535"], borderWidth: 0 },
+                        ],
+                    },
+                });
+
+                // Join timeline (by month)
+                const monthCounts = {};
+                allData.forEach((r) => {
+                    const d = r[dateKey];
+                    if (d) {
+                        const m = String(d).slice(0, 7);
+                        monthCounts[m] = (monthCounts[m] || 0) + 1;
+                    }
+                });
+                const monthKeys = Object.keys(monthCounts).sort();
+                makeChart("chart-timeline", {
+                    type: "line",
+                    data: {
+                        labels: monthKeys,
+                        datasets: [
+                            {
+                                label: "Joined",
+                                data: monthKeys.map((k) => monthCounts[k]),
+                                borderColor: "#6c63ff",
+                                backgroundColor: "rgba(108,99,255,.15)",
+                                tension: 0.4,
+                                fill: true,
+                            },
+                        ],
+                    },
+                });
+
+                // Top consumers
+                const sorted = [...allData]
+                    .sort((a, b) => (parseFloat(b[usedKey]) || 0) - (parseFloat(a[usedKey]) || 0))
+                    .slice(0, 8);
+                makeChart("chart-top-consumers", {
+                    type: "bar",
+                    data: {
+                        labels: sorted.map((r) => r[nameKey] || "?"),
+                        datasets: [
+                            {
+                                label: "Used",
+                                data: sorted.map((r) => parseFloat(r[usedKey]) || 0),
+                                backgroundColor: "#6c63ff",
+                                borderRadius: 6,
+                            },
+                        ],
+                    },
+                });
+
+                // Plan comparison
+                const plans = [...new Set(allData.map((r) => r[planKey]).filter(Boolean))];
+                makeChart("chart-plan-compare", {
+                    type: "bar",
+                    data: {
+                        labels: plans,
+                        datasets: [
+                            {
+                                label: "Used",
+                                data: plans.map((p) =>
+                                    allData
+                                        .filter((r) => r[planKey] === p)
+                                        .reduce((s, r) => s + (parseFloat(r[usedKey]) || 0), 0)
+                                ),
+                                backgroundColor: "#ff6b6b",
+                                borderRadius: 4,
+                            },
+                            {
+                                label: "Remaining",
+                                data: plans.map((p) =>
+                                    allData
+                                        .filter((r) => r[planKey] === p)
+                                        .reduce((s, r) => s + (parseFloat(r[remKey]) || 0), 0)
+                                ),
+                                backgroundColor: "#00e5a0",
+                                borderRadius: 4,
+                            },
+                        ],
+                    },
+                });
+            }
+
+            // ============================================================
+            // PLAN INSIGHTS
+            // ============================================================
+            function renderPlanInsights() {
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+                const usedKey = headers.find((h) => h.toLowerCase().includes("used")) || "used";
+                const remKey = headers.find((h) => h.toLowerCase().includes("remaining")) || "remaining";
+                const plans = [...new Set(allData.map((r) => r[planKey]).filter(Boolean))];
+
+                const icons = { premium: "💎", diamond: "🌟", basic: "🔰", default: "📋" };
+                document.getElementById("plan-insights-grid").innerHTML = plans
+                    .map((p) => {
+                        const group = allData.filter((r) => r[planKey] === p);
+                        const used = group.reduce((s, r) => s + (parseFloat(r[usedKey]) || 0), 0);
+                        const rem = group.reduce((s, r) => s + (parseFloat(r[remKey]) || 0), 0);
+                        const active = group.filter((r) => (r.status || "").toLowerCase() === "active").length;
+                        const icon = icons[p.toLowerCase()] || icons.default;
+                        return `<div class="stat-card">
+      <span class="stat-icon">${icon}</span>
+      <div class="stat-label">${p.toUpperCase()}</div>
+      <div class="stat-value">${group.length}</div>
+      <div class="stat-sub">${active} active · ${used} used · ${rem} left</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${used + rem ? Math.round((used / (used + rem)) * 100) : 0}%"></div></div>
+    </div>`;
+                    })
+                    .join("");
+
+                // Charts
+                makeChart("chart-plan-used-rem", {
+                    type: "bar",
+                    data: {
+                        labels: plans,
+                        datasets: [
+                            {
+                                label: "Used",
+                                data: plans.map((p) =>
+                                    allData
+                                        .filter((r) => r[planKey] === p)
+                                        .reduce((s, r) => s + (parseFloat(r[usedKey]) || 0), 0)
+                                ),
+                                backgroundColor: "#ff6b6b",
+                                borderRadius: 6,
+                            },
+                            {
+                                label: "Remaining",
+                                data: plans.map((p) =>
+                                    allData
+                                        .filter((r) => r[planKey] === p)
+                                        .reduce((s, r) => s + (parseFloat(r[remKey]) || 0), 0)
+                                ),
+                                backgroundColor: "#00e5a0",
+                                borderRadius: 6,
+                            },
+                        ],
+                    },
+                });
+                const planCounts = {};
+                allData.forEach((r) => {
+                    const p = r[planKey] || "Unknown";
+                    planCounts[p] = (planCounts[p] || 0) + 1;
+                });
+                makeChart("chart-plan-donut", {
+                    type: "doughnut",
+                    data: {
+                        labels: Object.keys(planCounts),
+                        datasets: [{ data: Object.values(planCounts), backgroundColor: CHART_COLORS, borderWidth: 0 }],
+                    },
+                });
+
+                // update plan filter dropdown
+                const pf = document.getElementById("plan-filter-d3");
+                if (pf) {
+                    const cur = pf.value;
+                    pf.innerHTML =
+                        '<option value="">All Plans</option>' +
+                        plans.map((p) => `<option value="${p}">${p}</option>`).join("");
+                    if (plans.includes(cur)) pf.value = cur;
+                }
+            }
+
+            function renderPlanTable() {
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+                const filter = document.getElementById("plan-filter-d3")?.value || "";
+                const rows = filter
+                    ? allData.filter((r) => (r[planKey] || "").toLowerCase() === filter.toLowerCase())
+                    : allData;
+                buildTable("plan-thead", "plan-tbody", rows, false);
+            }
+
+            // ============================================================
+            // PROFILES PAGE
+            // ============================================================
+            function renderProfiles() {
+                const nameKey = headers.find((h) => h.toLowerCase() === "name") || "name";
+                const planKey = headers.find((h) => h.toLowerCase() === "plan") || "plan";
+                const usedKey = headers.find((h) => h.toLowerCase().includes("used")) || "used";
+                const remKey = headers.find((h) => h.toLowerCase().includes("remaining")) || "remaining";
+                const phoneKey = headers.find((h) => h.toLowerCase() === "phone") || "phone";
+
+                if (!allData.length) {
+                    document.getElementById("profile-grid").innerHTML =
+                        '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">No subscribers found</div></div>';
+                    return;
+                }
+
+                document.getElementById("profile-grid").innerHTML = allData
+                    .map((r, i) => {
+                        const name = r[nameKey] || "Unknown";
+                        const initials =
+                            name
+                                .split(" ")
+                                .map((x) => x[0] || "")
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2) || "?";
+                        const plan = r[planKey] || "—";
+                        const used = parseFloat(r[usedKey]) || 0;
+                        const rem = parseFloat(r[remKey]) || 0;
+                        const total = used + rem;
+                        const pct = total ? Math.round((used / total) * 100) : 0;
+                        const statusCls =
+                            (r.status || "").toLowerCase() === "active" ? "badge-active" : "badge-inactive";
+                        const banner = profileBanners[i % profileBanners.length];
+                        const planCls =
+                            plan.toLowerCase() === "premium"
+                                ? "badge-premium"
+                                : plan.toLowerCase() === "diamond"
+                                  ? "badge-diamond"
+                                  : "badge-basic";
+
+                        return `<div class="profile-card" onclick='openEditModal(${JSON.stringify(r)})'>
+      <img class="profile-card-banner" src="${banner}" alt=""/>
+      <div class="profile-card-body">
+        <div class="profile-avatar">${initials}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="profile-name">${name}</div>
+            <div class="profile-plan">${r[phoneKey] || ""}</div>
+          </div>
+          <span class="badge ${statusCls}">${r.status || "—"}</span>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge ${planCls}">${plan}</span>
+        </div>
+        <div class="profile-stats">
+          <div class="p-stat"><div class="p-stat-val" style="color:var(--accent3)">${used}</div><div class="p-stat-lbl">Used</div></div>
+          <div class="p-stat"><div class="p-stat-val" style="color:var(--accent2)">${rem}</div><div class="p-stat-lbl">Remaining</div></div>
+        </div>
+        <div style="margin-top:8px">
+          <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:3px">
+            <span>Usage</span><span>${pct}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+    </div>`;
+                    })
+                    .join("");
+            }
+
+            // ============================================================
+            // ACTIVITY
+            // ============================================================
+            function addActivity(text, color = "#6c63ff") {
+                activityLog.unshift({ text, color, time: new Date() });
+                if (activityLog.length > 100) activityLog.pop();
+                renderActivity();
+                renderRecentActivity();
+            }
+
+            function renderActivity() {
+                const el = document.getElementById("full-activity");
+                if (!el) return;
+                if (!activityLog.length) {
+                    el.innerHTML =
+                        '<div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-text">No activity yet</div></div>';
+                    return;
+                }
+                el.innerHTML = activityLog
+                    .map(
+                        (a) => `<div class="activity-item">
+    <div class="activity-dot" style="background:${a.color}"></div>
+    <div><div class="activity-text">${a.text}</div>
+    <div class="activity-time">${a.time.toLocaleTimeString()}</div></div>
+  </div>`
+                    )
+                    .join("");
+            }
+
+            function renderRecentActivity() {
+                const el = document.getElementById("recent-activity");
+                if (!el) return;
+                const recent = activityLog.slice(0, 5);
+                if (!recent.length) {
+                    el.innerHTML =
+                        '<div style="color:var(--muted);font-size:0.82rem;padding:10px 0">No recent activity</div>';
+                    return;
+                }
+                el.innerHTML = recent
+                    .map(
+                        (a) => `<div class="activity-item">
+    <div class="activity-dot" style="background:${a.color}"></div>
+    <div><div class="activity-text">${a.text}</div>
+    <div class="activity-time">${a.time.toLocaleTimeString()}</div></div>
+  </div>`
+                    )
+                    .join("");
+            }
+
+            // ============================================================
+            // COLUMN MANAGER
+            // ============================================================
+            function renderColumnManager() {
+                const el = document.getElementById("current-cols-display");
+                if (!el) return;
+                const fixed = ["id", "name", "phone", "adress", "plan", "used", "remaining", "status", "joined_date"];
+                el.innerHTML = headers
+                    .map((h) => {
+                        const isFixed = fixed.includes(h.toLowerCase());
+                        return `<span class="col-chip">
+      <span>📋 ${h}</span>
+      ${
+          isFixed
+              ? '<span style="font-size:0.65rem;color:var(--muted)">core</span>'
+              : `<button class="del" onclick="deleteColumn('${h}')" title="Remove">✕</button>`
+      }
+    </span>`;
+                    })
+                    .join("");
+                document.getElementById("total-cols-count").textContent = headers.length + " columns";
+            }
+
+            async function addColumn() {
+                const name = document.getElementById("new-col-name").value.trim();
+                if (!name) {
+                    showToast("⚠ Enter a column name");
+                    return;
+                }
+                if (headers.map((h) => h.toLowerCase()).includes(name.toLowerCase())) {
+                    showToast("⚠ Column already exists");
+                    return;
+                }
+                showToast("Adding column…");
+                const ok = await sendData("addColumn", { columnName: name });
+                if (ok) {
+                    document.getElementById("new-col-name").value = "";
+                    showToast("✅ Column added!");
+                }
+            }
+
+            async function deleteColumn(name) {
+                if (!confirm(`Delete column "${name}"? This removes it from ALL rows in Google Sheets.`)) return;
+                const ok = await sendData("deleteColumn", { columnName: name });
+                if (ok) showToast("✅ Column removed");
+            }
+
+            // ============================================================
+            // ADD / EDIT MODAL
+            // ============================================================
+            function openAddModal() {
+                editingRowIndex = null;
+                document.getElementById("modal-title").textContent = "Add Subscriber";
+                document.getElementById("modal-save-btn").textContent = "Add";
+                buildModalForm({});
+                openModal("addModal");
+            }
+
+            function openEditModal(row) {
+                editingRowIndex = row._rowIndex;
+                document.getElementById("modal-title").textContent = "Edit Subscriber";
+                document.getElementById("modal-save-btn").textContent = "Save Changes";
+                buildModalForm(row);
+                openModal("addModal");
+            }
+
+            function buildModalForm(row) {
+                const nameKey = headers.find((h) => h.toLowerCase() === "name") || "name";
+                // Separate into pairs
+                const fields = headers.map((h) => {
+                    const val = row[h] ?? "";
+                    const isStatus = h.toLowerCase() === "status";
+                    const isPlan = h.toLowerCase() === "plan";
+                    const plans = [
+                        ...new Set(
+                            allData
+                                .map((r) => r[headers.find((x) => x.toLowerCase() === "plan") || "plan"])
+                                .filter(Boolean)
+                        ),
+                    ];
+
+                    if (isStatus)
+                        return `<div class="form-group"><label class="form-label">${h}</label>
+      <select class="form-input" data-key="${h}">
+        <option value="active" ${val === "active" ? "selected" : ""}>Active</option>
+        <option value="inactive" ${val === "inactive" ? "selected" : ""}>Inactive</option>
+      </select></div>`;
+                    if (isPlan && plans.length)
+                        return `<div class="form-group"><label class="form-label">${h}</label>
+      <select class="form-input" data-key="${h}">
+        ${plans.map((p) => `<option value="${p}" ${val === p ? "selected" : ""}>${p}</option>`).join("")}
+        <option value="">Other…</option>
+      </select></div>`;
+                    return `<div class="form-group"><label class="form-label">${h}</label>
+      <input class="form-input" data-key="${h}" value="${String(val).replace(/"/g, "&quot;")}" placeholder="${h}"/></div>`;
+                });
+
+                // add unsplash hero inside modal
+                const heroIdx = Math.floor(Math.random() * profileBanners.length);
+                document.getElementById("modal-body").innerHTML =
+                    `<img src="${profileBanners[heroIdx]}" style="width:100%;height:80px;object-fit:cover;border-radius:10px;margin-bottom:14px;opacity:.6" alt=""/>
+     <div class="form-row">${fields.join("")}</div>`;
+            }
+
+            async function saveRecord() {
+                const inputs = document.querySelectorAll("#modal-body [data-key]");
+                const data = {};
+                inputs.forEach((el) => {
+                    data[el.dataset.key] = el.value;
+                });
+
+                if (editingRowIndex) {
+                    const ok = await sendData("updateRow", { rowIndex: editingRowIndex, data });
+                    if (ok) {
+                        closeModal("addModal");
+                        showToast("✅ Record updated!");
+                        addActivity(`✏ Updated row ${editingRowIndex}`, "#6c63ff");
+                    }
+                } else {
+                    const ok = await sendData("addRow", { data });
+                    if (ok) {
+                        closeModal("addModal");
+                        showToast("✅ Subscriber added!");
+                        addActivity("➕ Added new subscriber", "#00e5a0");
+                    }
+                }
+            }
+
+            // ============================================================
+            // DELETE
+            // ============================================================
+            let pendingDeleteRow = null;
+            function openDeleteModal(rowIndex) {
+                pendingDeleteRow = rowIndex;
+                document.getElementById("confirm-del-btn").onclick = async () => {
+                    const ok = await sendData("deleteRow", { rowIndex: pendingDeleteRow });
+                    if (ok) {
+                        closeModal("delModal");
+                        showToast("🗑 Record deleted");
+                        addActivity(`🗑 Deleted row ${pendingDeleteRow}`, "#ff6b6b");
+                    }
+                };
+                openModal("delModal");
+            }
+
+            // ============================================================
+            // MODAL HELPERS
+            // ============================================================
+            function openModal(id) {
+                document.getElementById(id).classList.add("open");
+            }
+            function closeModal(id) {
+                document.getElementById(id).classList.remove("open");
+            }
+            document.querySelectorAll(".modal-overlay").forEach((m) => {
+                m.addEventListener("click", (e) => {
+                    if (e.target === m) m.classList.remove("open");
+                });
+            });
+
+            // ============================================================
+            // EXPORT CSV
+            // ============================================================
+            function exportCSV() {
+                if (!allData.length) {
+                    showToast("No data to export");
+                    return;
+                }
+                const rows = [
+                    headers.join(","),
+                    ...allData.map((r) =>
+                        headers.map((h) => `"${(r[h] || "").toString().replace(/"/g, '""')}"`).join(",")
+                    ),
+                ];
+                const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "subscribers_" + new Date().toISOString().slice(0, 10) + ".csv";
+                a.click();
+                showToast("✅ CSV downloaded");
+                addActivity("⬇ Exported CSV", "#ffd166");
+            }
+
+            // ============================================================
+            // MISC UI
+            // ============================================================
+            function toggleCompact() {
+                document.querySelectorAll("tbody td").forEach((td) => {
+                    td.style.padding = document.getElementById("toggle-compact").checked ? "5px 10px" : "";
+                });
+            }
+
+            function showToast(msg, dur = 2800) {
+                const t = document.getElementById("toast");
+                t.textContent = msg;
+                t.classList.add("show");
+                setTimeout(() => t.classList.remove("show"), dur);
+            }
+
+            // ============================================================
+            // APPS SCRIPT BACKEND NOTE
+            // Your Apps Script must handle these actions via POST:
+            //   getData    → { headers:[], rows:[[]] }
+            //   addRow     → { data:{} }
+            //   updateRow  → { rowIndex:N, data:{} }
+            //   deleteRow  → { rowIndex:N }
+            //   addColumn  → { columnName:'' }
+            //   deleteColumn → { columnName:'' }
+            // All POST actions return { success:true } or { success:false, error:'' }
+            // ============================================================
+
+            // ============================================================
+            // INIT
+            // ============================================================
+            (async function init() {
+                addActivity("🚀 Dashboard initialized", "#6c63ff");
+                addActivity("🔗 Connecting to Google Sheets…", "#ffd166");
+                await fetchData();
+                refreshTimer = setInterval(fetchData, refreshInterval);
+                // Push initial history state
+                window.history.pushState({ page: "overview" }, "", "");
+            })();
+        </script>
+    </body>
+</html>
